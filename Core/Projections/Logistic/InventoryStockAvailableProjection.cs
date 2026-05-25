@@ -1,0 +1,14 @@
+namespace Core.Projections.Logistic
+{
+    public class InventoryStockAvailableProjection
+    {
+        public long ProductsId { get; set; }
+        public string? ProductDescription { get; set; }
+        public long WarehouseId { get; set; }
+        public decimal StockQuantity { get; set; }
+        public decimal ReservedQuantity { get; set; }
+        public decimal AvailableQuantity { get; set; }
+        public decimal AverageCost { get; set; }
+        public decimal LastCost { get; set; }
+    }
+}

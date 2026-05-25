@@ -1,0 +1,77 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.OpporStateChangedProposal>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+           Propuesta comercial
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Estimados(as),
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Les informamos que la oportunidad comercial
+    <b style="color:#0D4C9C;">@Model.OpporNumber</b> ha avanzado a la etapa
+    <b>PROPUESTA</b> en el sistema <b>IDELCOM ERP</b>.
+</p>
+<p style="margin:0 0 24px; font-size:14px; line-height:1.65; color:#444;">
+    A continuaci&oacute;n se detallan los datos principales para su conocimiento y
+    la coordinaci&oacute;n de los siguientes pasos comerciales y t&eacute;cnicos.
+</p>
+
+<!-- Info Box -->
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información de la Oportunidad
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporNumber</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Descripción:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientsName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Vendedor:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.SellerName</td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado General:</b></td>
+                    <td style="font-size:14px; padding:6px 0; color:#0D4C9C; font-weight:600;">@Model.StatusGeneral</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado Comercial:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.StatusOppor</td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Comentario:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ProposalComment</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<p style="margin:18px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Agradeceremos su revisi&oacute;n y coordinaci&oacute;n con los equipos involucrados para
+    asegurar el seguimiento oportuno de esta propuesta.
+</p>

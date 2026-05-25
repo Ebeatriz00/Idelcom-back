@@ -1,0 +1,65 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.OpporStateChanged>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+        Cambio de Estado de Oportunidad
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Estimado <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Le informamos que la siguiente oportunidad comercial ha cambiado su estado dentro del sistema
+    <b>IDELCOM ERP</b>. A continuación, se presenta un resumen del detalle actualizado:
+</p>
+
+<!-- Info Box -->
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información de la Oportunidad
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporNumber</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Descripción:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientsName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Vendedor:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.SellerName</td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado General:</b></td>
+                    <td style="font-size:14px; padding:6px 0; color:#0D4C9C; font-weight:600;">@Model.StatusGeneral</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado Comercial:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.StatusOppor</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>

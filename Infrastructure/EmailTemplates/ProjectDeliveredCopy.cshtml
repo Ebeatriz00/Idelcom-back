@@ -1,0 +1,61 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.ProjectDeliveredCopy>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+        Proyecto Entregado
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.WorkerName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Te enviamos esta copia para informarte que el proyecto <b>@Model.ProjectNumber</b> ha cambiado a estado <b>entregado</b> dentro del sistema <b>IDELCOM ERP</b>.
+    A continuación, los detalles generales del proyecto.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información del Proyecto (Copia)
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>Número de Proyecto:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ProjectNumber</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Nombre del Proyecto:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ProjectName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientsName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado Actual:</b></td>
+                    <td style="font-size:14px; padding:6px 0; font-weight: bold;">@Model.Status</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+<p style="margin:25px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Este es un mensaje de caracter informativo. Por favor ingresa al sistema si necesitas revisar más detalles asociados a esta entrega.
+</p>

@@ -1,0 +1,107 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.ProjectResponsibleAssigned>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+    Asignación de Proyecto
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Se te ha asignado como <b>responsable de la Oportunidad</b>  dentro del sistema <b>IDELCOM ERP</b>.
+    A continuación, encontrarás los detalles del proyecto y los entregables pendientes para tu gestión.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información de la Oportunidad
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>Proyecto:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientsName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Asignado por:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.AssignerName</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+<p style="margin:0 0 10px; font-size:14px; font-weight:600; color:#0D4C9C;">
+     Entregables pendientes
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="border-collapse:collapse; font-size:13px; margin-bottom:8px;">
+    <thead>
+        <tr>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Entregable</th>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Estado</th>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Fecha compromiso</th>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Nota</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.DeliverablesSales != null && Model.DeliverablesSales.Count > 0)
+        {
+            @for (int i = 0; i < Model.DeliverablesSales.Count; i++)
+            {
+                var d = Model.DeliverablesSales[i];
+                var border = i == Model.DeliverablesSales.Count - 1
+                ? "none"
+                : "1px solid #F0F3F7";
+
+                <tr>
+                    <td style="padding:8px; border-bottom:@border;">
+                        @d.DeliverablesName
+                    </td>
+                    <td style="padding:8px; border-bottom:@border;">
+                        @(string.IsNullOrWhiteSpace(d.State) ? "PENDIENTE" : d.State)
+                    </td>
+                    <td style="padding:8px; border-bottom:@border;">
+                        @(d.DueDate != default(DateTime) ? d.DueDate.ToString("dd/MM/yyyy") : "-")
+                    </td>
+                    <td style="padding:8px; border-bottom:@border;">
+                        @(string.IsNullOrWhiteSpace(d.Comment) ? "-" : d.Comment)
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" style="padding:15px; font-style:italic; color:#999; text-align:center; border-bottom:1px solid #F0F3F7;">
+                    No hay entregables registrados para este proyecto.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p style="margin:25px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Por favor ingresa al sistema para iniciar la gesti&oacute;n y seguimiento de estos entregables.
+</p>

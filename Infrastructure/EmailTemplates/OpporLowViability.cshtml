@@ -1,0 +1,85 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.OpporCreated>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+        Registro de Nueva Oportunidad Comercial
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Estimado <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Se ha identificado que la siguiente oportunidad <b style="color:#D9534F;">no cumple</b>
+    con el nivel m&iacute;nimo de viabilidad requerido.
+    Se recomienda su revisi&oacute;n inmediata.
+</p>
+
+
+<!-- Info Box -->
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Informaci&oacute;n de la Oportunidad
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporNumber</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Descripci&oacute;n:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientsName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Vendedor:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.SellerName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Sector:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.SectorName</td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Viabilidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.Viability%</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado General:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.StatusGeneral</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado Comercial:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.StatusOppor</td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Fecha Cierre:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.DateFinish</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+<p style="margin:28px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Agradeceremos la evaluaci&oacute;n correspondiente.
+</p>
+

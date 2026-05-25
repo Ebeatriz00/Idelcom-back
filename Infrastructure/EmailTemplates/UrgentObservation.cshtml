@@ -1,0 +1,76 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.UrgentObservationDto>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+        Observación Urgente Registrada
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Se ha registrado una <b>observación @Model.ObservationSeverity</b> en una oportunidad bajo tu responsabilidad en el sistema <b>IDELCOM ERP</b>.
+    A continuación, encontrarás los detalles del proyecto y el motivo de la observación.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información del Proyecto
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporNumber</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Severidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;"><b>@Model.ObservationSeverity</b></td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+<p style="margin:0 0 10px; font-size:14px; font-weight:600; color:#0D4C9C;">
+    Detalle de la Observación
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="border-collapse:collapse; font-size:13px; margin-bottom:8px;">
+    <thead>
+        <tr>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Descripción / Motivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:15px 8px; border-bottom:1px solid #F0F3F7; line-height:1.5; color:#333;">
+                @Model.ObservationReason
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p style="margin:25px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Por favor ingresa al sistema para atender esta observación a la brevedad posible.
+</p>

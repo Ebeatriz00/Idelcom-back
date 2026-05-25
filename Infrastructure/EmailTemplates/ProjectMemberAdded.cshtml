@@ -1,0 +1,59 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.ProjectTeamAddDto>
+@{
+    Layout = "TemplateEmail.cshtml";
+}
+
+@section Title {
+        Asignaci&oacute;n de Oportunidad
+}
+
+<p style="margin:0 0 14px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 18px; font-size:14px; line-height:1.6; color:#444;">
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        @Model.Message
+    }
+    else
+    {
+        <text>Bienvenido al equipo.</text>
+    }
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E6ECF5; border-radius:10px; padding:16px;">
+    <tr>
+        <td colspan="2" style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:10px;">
+            Detalles de la Oportunidad
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="font-size:14px; color:#555; width:140px; padding:6px 0; vertical-align: top;">
+                        <b>Oportunidad:</b>
+                    </td>
+                    <td style="font-size:14px; padding:6px 0; color:#333; font-weight:500;">
+                        @Model.OpporName
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; color:#555; padding:6px 0;">
+                        <b>Responsable:</b>
+                    </td>
+                    <td style="font-size:14px; padding:6px 0; color:#333;">
+                        @Model.ResponsibleName
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="margin:18px 0 0; font-size:14px; color:#444;">
+    Por favor ingresa al sistema para ver tus nuevas tareas.
+</p>

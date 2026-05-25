@@ -1,0 +1,54 @@
+# Archivos de configuración local
+.env
+.env.*
+!.env.example
+!.env.template
+
+
+# Archivos de usuario de Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Carpetas de dependencias
+bin/
+obj/
+out/
+artifacts/
+
+# Paquetes NuGet
+*.nupkg
+# Paquetes generados por dotnet pack
+*.snupkg
+packages/
+
+# Archivos de publicación
+publish/
+
+# Carpetas de configuración de IDE
+.vscode/
+.idea/
+.claude/
+.dotnet/
+.dotnet-cli/
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+*.cache
+*.lscache
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de configuración locales
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+!appsettings.*.example.json

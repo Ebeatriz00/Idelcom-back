@@ -1,0 +1,176 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.SsomaDocumentExpirationEmailModel>
+@{
+    Layout = "TemplateEmail";
+}
+
+@functions {
+    private static string FormatDate(DateOnly date) => date.ToString("dd/MM/yyyy");
+
+    private static string CodeLabel(string code) => code switch
+    {
+        "HOY" => "Vence hoy",
+        "D1" => "Vence en 1 d&iacute;a",
+        "D3" => "Vence en 3 d&iacute;as",
+        "D7" => "Vence en 7 d&iacute;as",
+        "D15" => "Vence en 15 d&iacute;as",
+        "D30" => "Vence en 30 d&iacute;as",
+        "D60" => "Vence en 60 d&iacute;as",
+        _ => code
+    };
+
+    private static string BadgeColor(string code) => code switch
+    {
+        "HOY" => "#B42318",
+        "D1" => "#C4320A",
+        "D3" => "#DC6803",
+        "D7" => "#B54708",
+        "D15" => "#0D4C9C",
+        "D30" => "#175CD3",
+        "D60" => "#316A43",
+        _ => "#475467"
+    };
+}
+
+@section Title {
+    Alerta SSOMA de Documentos
+}
+
+<p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#444;">
+    Se identificaron documentos SSOMA vencidos o pr&oacute;ximos a vencer. Revise el resumen consolidado para coordinar la regularizaci&oacute;n correspondiente.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="margin:0 0 24px; background:#F7F9FC; border:1px solid #E1E8F0; border-radius:8px;">
+    <tr>
+        <td style="padding:16px;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="font-size:12px; color:#667085; text-transform:uppercase; font-weight:700; padding-bottom:6px;">
+                        Trabajadores
+                    </td>
+                    <td style="font-size:12px; color:#667085; text-transform:uppercase; font-weight:700; padding-bottom:6px;">
+                        Documentos
+                    </td>
+                    <td style="font-size:12px; color:#667085; text-transform:uppercase; font-weight:700; padding-bottom:6px;">
+                        Vencen hoy
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:24px; color:#0D4C9C; font-weight:700;">
+                        @Model.Totals.TotalWorkers
+                    </td>
+                    <td style="font-size:24px; color:#0D4C9C; font-weight:700;">
+                        @Model.Totals.TotalDocuments
+                    </td>
+                    <td style="font-size:24px; color:#B42318; font-weight:700;">
+                        @Model.Totals.DueTodayDocuments
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+@if (Model.ShowDetailedView)
+{
+    foreach (var worker in Model.Workers)
+    {
+        <table width="100%" cellspacing="0" cellpadding="0"
+               style="margin:0 0 18px; border:1px solid #E1E8F0; border-radius:8px; overflow:hidden;">
+            <tr>
+                <td style="background:#EEF4FF; padding:14px 16px;">
+                    <table width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td style="font-size:15px; font-weight:700; color:#0D4C9C;">
+                                @worker.WorkerName
+                            </td>
+                            <td align="right" style="font-size:12px; color:#475467;">
+                                @worker.TotalDocuments documento(s)
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0;">
+                    <table width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                                Documento
+                            </td>
+                            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                                Alcance
+                            </td>
+                            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                                Vencimiento
+                            </td>
+                            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                                Estado
+                            </td>
+                        </tr>
+                        @foreach (var doc in worker.Documents)
+                        {
+                            <tr>
+                                <td style="padding:10px 12px; font-size:13px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                    @doc.DocumentName
+                                </td>
+                                <td style="padding:10px 12px; font-size:13px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                    @doc.Scope
+                                </td>
+                                <td style="padding:10px 12px; font-size:13px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                    @FormatDate(doc.ExpiryDate)
+                                </td>
+                                <td style="padding:10px 12px; font-size:12px; border-bottom:1px solid #F2F4F7;">
+                                    <span style="display:inline-block; padding:4px 8px; border-radius:6px; color:white; background:@BadgeColor(doc.Code); font-weight:700;">
+                                        @Raw(CodeLabel(doc.Code))
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </td>
+            </tr>
+        </table>
+    }
+}
+else
+{
+    <p style="margin:0 0 14px; font-size:14px; line-height:1.6; color:#444;">
+        La alerta contiene m&aacute;s de 10 trabajadores, por lo que se muestra una vista resumida por trabajador.
+    </p>
+
+    <table width="100%" cellspacing="0" cellpadding="0"
+           style="border:1px solid #E1E8F0; border-radius:8px; overflow:hidden;">
+        <tr>
+            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; background:#F7F9FC; border-bottom:1px solid #E1E8F0;">
+                Trabajador
+            </td>
+            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; background:#F7F9FC; border-bottom:1px solid #E1E8F0;">
+                Documentos
+            </td>
+            <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; background:#F7F9FC; border-bottom:1px solid #E1E8F0;">
+                Prioridad
+            </td>
+        </tr>
+        @foreach (var worker in Model.Workers)
+        {
+            <tr>
+                <td style="padding:10px 12px; font-size:13px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                    @worker.WorkerName
+                </td>
+                <td style="padding:10px 12px; font-size:13px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                    @worker.TotalDocuments
+                </td>
+                <td style="padding:10px 12px; font-size:12px; border-bottom:1px solid #F2F4F7;">
+                    <span style="display:inline-block; padding:4px 8px; border-radius:6px; color:white; background:@BadgeColor(worker.HighestPriorityCode); font-weight:700;">
+                        @Raw(CodeLabel(worker.HighestPriorityCode))
+                    </span>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+<p style="margin:24px 0 0; font-size:13px; line-height:1.6; color:#667085;">
+    Fecha de generaci&oacute;n: @FormatDate(Model.GeneratedDate)
+</p>

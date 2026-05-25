@@ -1,0 +1,79 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.HiringCompletedDto>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+            Consultoría Completada
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.WorkerName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Te informamos que el área de <b>Contrataciones</b> ha finalizado la gestión de consultoría del proyecto en el sistema <b>IDELCOM ERP</b>.
+    A continuación, encontrarás los detalles del cierre.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información del Proyecto
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>Proyecto:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ProjectName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ProjectCode</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Cliente:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.ClientName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Estado Actual:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">
+                        <b>@Model.NewStatus</b>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+<p style="margin:0 0 10px; font-size:14px; font-weight:600; color:#0D4C9C;">
+    Detalle del Mensaje
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="border-collapse:collapse; font-size:13px; margin-bottom:8px;">
+    <thead>
+        <tr>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Información de Contrataciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:15px 8px; border-bottom:1px solid #F0F3F7; line-height:1.5; color:#333;">
+                @Model.MessageDetail Ingrese al sistema para ver el informe subido.
+            </td>
+        </tr>
+    </tbody>
+</table>

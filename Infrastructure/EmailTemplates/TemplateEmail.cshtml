@@ -1,0 +1,65 @@
+@inherits RazorLight.TemplatePage<dynamic>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light only" />
+    <title>IDELCOM ERP</title>
+</head>
+
+<body style="margin:0; padding:0; background:#F4F6F9;
+             font-family:'Segoe UI', Arial, sans-serif; color:#333;">
+
+    <table width="100%" cellspacing="0" cellpadding="0"
+           style="padding:32px 0; background:#F4F6F9;">
+        <tr>
+            <td align="center">
+                <table width="620" cellspacing="0" cellpadding="0"
+                       style="background:#FFFFFF; border-radius:12px;
+                              box-shadow:0 8px 24px rgba(0,0,0,.08); overflow:hidden;">
+
+                    <tr>
+                        <td style="background:#0D4C9C; padding:24px 32px;">
+                            <table width="100%">
+                                <tr>
+                                    <td style="color:white; font-size:20px; font-weight:700;">
+                                        @RenderSection("Title", required: false)
+                                    </td>
+
+                                    <td style="text-align:right; color:white; font-size:13px; opacity:.9;">
+                                        IDELCOM ERP
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="height:4px; background:#F37023;"></td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:36px 40px;">
+                            @RenderBody()
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#0D4C9C; padding:20px; text-align:center;">
+                            <p style="margin:0; color:white; font-size:12px; opacity:.9;">
+                                IDELCOM ERP - Notificaci&oacute;n Autom&aacute;tica
+                            </p>
+                            <p style="margin:6px 0 0; color:white; font-size:11px; opacity:.7;">
+                                Por favor no responder este mensaje.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

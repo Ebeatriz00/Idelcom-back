@@ -1,0 +1,52 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.ClientReassigned>
+@{
+    Layout = "TemplateEmail.cshtml";
+}
+
+@section Title {
+                    Asignaci&oacute;n de Cartera
+}
+
+<p style="margin:0 0 14px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 18px; font-size:14px; line-height:1.6; color:#444;">
+    Se te ha asignado un nuevo cliente dentro del sistema <b>IDELCOM ERP</b>.
+</p>
+
+<!-- Info Box -->
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E6ECF5; border-radius:10px; padding:16px;">
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:10px;">
+            Datos del cliente
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="font-size:14px; color:#555; width:140px; padding:6px 0;">
+                        <b>Cliente:</b>
+                    </td>
+                    <td style="font-size:14px; padding:6px 0;">
+                        @Model.ClientName
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size:14px; color:#555; padding:6px 0;">
+                        <b>Asignado por:</b>
+                    </td>
+                    <td style="font-size:14px; padding:6px 0;">
+                        @Model.AssignerName
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="margin:18px 0 0; font-size:14px; color:#444;">
+    Por favor revisa tu bandeja de clientes para continuar con la gesti&oacute;n.
+</p>

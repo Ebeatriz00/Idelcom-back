@@ -1,0 +1,85 @@
+﻿@inherits RazorLight.TemplatePage<Core.Entities.Email.TaskAssigned>
+@{
+    Layout = "TemplateEmail";
+}
+
+@section Title {
+        Nueva Tarea Asignada
+}
+
+<p style="margin:0 0 20px; font-size:15px;">
+    Hola <b style="color:#0D4C9C;">@Model.ReceiverName</b>,
+</p>
+
+<p style="margin:0 0 28px; font-size:14px; line-height:1.65; color:#444;">
+    Se te ha asignado una <b>nueva tarea</b> relacionada a una oportunidad en el sistema <b>IDELCOM ERP</b>.
+    A continuación, encontrarás los detalles del proyecto y la actividad a realizar.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="background:#F7F9FC; border:1px solid #E1E8F0; border-radius:10px; padding:18px;">
+
+    <tr>
+        <td style="font-size:13px; color:#0D4C9C; font-weight:700; padding-bottom:12px;">
+            Información de la Asignación
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <td style="font-size:14px; width:160px; padding:6px 0; color:#555;"><b>N° Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporNum</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Oportunidad:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.OpporDesc</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Asignado por:</b></td>
+                    <td style="font-size:14px; padding:6px 0;">@Model.AssignerName</td>
+                </tr>
+
+                <tr>
+                    <td style="font-size:14px; padding:6px 0; color:#555;"><b>Fecha Límite:</b></td>
+                    <td style="font-size:14px; padding:6px 0;"><b>@Model.DueDate.ToString("dd/MM/yyyy")</b></td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+
+<p style="margin:0 0 10px; font-size:14px; font-weight:600; color:#0D4C9C;">
+    Detalle de la Tarea
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="border-collapse:collapse; font-size:13px; margin-bottom:8px;">
+    <thead>
+        <tr>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555; width:35%;">Título</th>
+            <th align="left" style="padding:8px; border-bottom:1px solid #E1E8F0; color:#555;">Descripción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:15px 8px; border-bottom:1px solid #F0F3F7; line-height:1.5; color:#333; font-weight:600; vertical-align:top;">
+                @Model.TaskTitle
+            </td>
+            <td style="padding:15px 8px; border-bottom:1px solid #F0F3F7; line-height:1.5; color:#333; vertical-align:top;">
+                @Model.TaskDescription
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p style="margin:25px 0 0; font-size:14px; line-height:1.6; color:#444;">
+    Por favor ingresa al sistema para revisar y gestionar esta tarea.
+</p>

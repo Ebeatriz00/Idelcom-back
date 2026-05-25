@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.72" />
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="RazorLight" Version="2.3.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\jheanv\Documents\JHEAN\idelcom\Idelcom.Api\Infrastructure\Repositories\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="EmailTemplates\DecisionViability.cshtml" />
+    <None Remove="EmailTemplates\OpporLowViability.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <EmbeddedResource Include="EmailTemplates\OpporCreatedManager.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporHiringDev.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporHiring.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporLowViability.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporObsPresales.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporObsCommercial.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporObsLicitations.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedStandBy.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedDiscarded.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedLost.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedWon.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedProposal.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedDeliverables.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChangedPresales.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\OpporStateChanged.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\ProjectDeliveredCopy.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\ProjectMemberAdded.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\HiringConsultancyCompleted.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\ProjectDelivered.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\QuotationInvalidated.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\SupportExpirationAlert.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\TaskAssigned.cshtml" />
+	  <EmbeddedResource Include="EmailTemplates\UrgentObservation.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\SsomaDocumentExpirationAlert.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\ProjectResponsibleAssigned.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\DecisionViabilityRechazed.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\DecisionViability.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\OpporReEvaluation.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\OpporCreated.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\ClientReassigned.cshtml" />
+    <EmbeddedResource Include="EmailTemplates\TemplateEmail.cshtml" />
+  </ItemGroup>
+
+</Project>

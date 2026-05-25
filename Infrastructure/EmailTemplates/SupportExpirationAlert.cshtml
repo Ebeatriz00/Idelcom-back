@@ -1,0 +1,91 @@
+@inherits RazorLight.TemplatePage<Core.Entities.Email.SupportExpirationAlert>
+@{
+    Layout = "TemplateEmail";
+}
+
+@functions {
+    // Convierte el string de SQL "YYYY-MM-DD" a formato local "DD/MM/YYYY"
+    private static string FormatDate(string isoDate)
+    {
+        if (DateTime.TryParse(isoDate, out DateTime d))
+            return d.ToString("dd/MM/yyyy");
+        return isoDate;
+    }
+
+    // Traduce el código de tu SP a texto legible para el usuario
+    private static string CodeLabel(string code) => code switch
+    {
+        "HOY" => "Vence hoy",
+        "D7" => "Vence en 7 d&iacute;as",
+        "D20" => "Vence en 20 d&iacute;as",
+        "D30" => "Vence en 30 d&iacute;as",
+        _ => code
+    };
+
+    // Asigna el color de la etiqueta (badge) según la urgencia
+    private static string BadgeColor(string code) => code switch
+    {
+        "HOY" => "#B42318", // Rojo oscuro (Crítico)
+        "D7" => "#DC6803", // Naranja (Muy Urgente)
+        "D20" => "#0D4C9C", // Azul oscuro (Urgente)
+        "D30" => "#175CD3", // Azul claro (Aviso)
+        _ => "#475467"  // Gris por defecto
+    };
+}
+
+@section Title {
+        Alerta de Vencimiento de Soporte
+}
+
+<p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#444;">
+    Se identific&oacute; un servicio de soporte pr&oacute;ximo a vencer. Por favor, gestione la renovaci&oacute;n correspondiente para evitar interrupciones en el sistema.
+</p>
+
+<table width="100%" cellspacing="0" cellpadding="0"
+       style="margin:0 0 18px; border:1px solid #E1E8F0; border-radius:8px; overflow:hidden;">
+    <tr>
+        <td style="background:#EEF4FF; padding:14px 16px;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="font-size:15px; font-weight:700; color:#0D4C9C;">
+                        @Model.Provider
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:0;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                        Servicio
+                    </td>
+                    <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                        Fecha Vencimiento
+                    </td>
+                    <td style="padding:10px 12px; font-size:12px; color:#667085; font-weight:700; border-bottom:1px solid #E1E8F0;">
+                        Estado
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 12px; font-size:13px; color:#344054;">
+                        @Model.Service
+                    </td>
+                    <td style="padding:10px 12px; font-size:13px; color:#344054;">
+                        @FormatDate(Model.ExpirationDate)
+                    </td>
+                    <td style="padding:10px 12px; font-size:12px;">
+                        <span style="display:inline-block; padding:4px 8px; border-radius:6px; color:white; background:@BadgeColor(Model.AlertCode); font-weight:700;">
+                            @Raw(CodeLabel(Model.AlertCode))
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<p style="margin:24px 0 0; font-size:13px; line-height:1.6; color:#667085;">
+    Mensaje generado autom&aacute;ticamente.
+</p>
