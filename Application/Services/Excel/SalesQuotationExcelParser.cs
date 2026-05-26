@@ -72,7 +72,8 @@ namespace Application.Services.Excel
             ValidateHeader(ws);
             ValidateHeaderOrder(ws);
             ValidateVvcAndResumenSection(ws);
-            ValidateSeedCapitalSection(ws);
+            if (!IsDayQuotationVariant(ws))
+                ValidateSeedCapitalSection(ws);
 
             var dto = new SalesQuotationCreateDto();
 
@@ -458,10 +459,9 @@ namespace Application.Services.Excel
                 }
                 else if (colDia > 0)
                 {
-                    // Variante B: TotalPrice = P.U × DIA
                     var dia = SharedKernel.Helpers.Helpers.SafeDecimal(ws.Cell(row, colDia));
-                    if (dia.HasValue && line.UnitPrice.HasValue)
-                        line.TotalPrice = line.UnitPrice * dia;
+                    if (dia.HasValue)
+                        line.TotalPrice = dia;
                 }
 
                 if (colPVT > 0) line.LineAmount = SharedKernel.Helpers.Helpers.SafeDecimal(ws.Cell(row, colPVT));
@@ -1273,6 +1273,31 @@ namespace Application.Services.Excel
 
                 col += actualSpan;
             }
+
+            static string Norm(string? s)
+            {
+                s = (s ?? "").Trim().Replace(":", "");
+                s = string.Join(" ", s.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                return s.ToUpperInvariant();
+            }
+        }
+        private static bool IsDayQuotationVariant(IXLWorksheet ws)
+        {
+            int minRow = 15, maxRow = 35;
+
+            var itemCell = ws.CellsUsed(XLCellsUsedOptions.All)
+                .Where(c => c.Address.RowNumber >= minRow && c.Address.RowNumber <= maxRow)
+                .FirstOrDefault(c => Norm(c.GetString()) == "ITEM");
+
+            if (itemCell == null)
+                return false;
+
+            var diaCell = ws.Cell(itemCell.Address.RowNumber, itemCell.Address.ColumnNumber + 9);
+            var text = diaCell.IsMerged()
+                ? diaCell.MergedRange().FirstCell().GetString()
+                : diaCell.GetString();
+
+            return Norm(text) == "DIA";
 
             static string Norm(string? s)
             {

@@ -95,7 +95,7 @@ namespace Idelcom.Controllers
                 });
 
             using var stream = file.OpenReadStream();
-            var result = _validateQuotationExcel.Execute(stream);
+            var result = _validateQuotationExcel.Execute(stream, file.FileName);
             return Ok(result);
         }
     }
