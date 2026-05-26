@@ -235,7 +235,21 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("RequireAppAccess", p => p.RequireClaim("source", "mobile")); // Exige que el token provenga de la App Móvil.
 
 // Configuración de políticas de CORS para permitir orígenes de confianza.
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var allowedOriginsSection = builder.Configuration.GetSection("AllowedOrigins");
+var allowedOrigins = allowedOriginsSection
+    .GetChildren()
+    .Select(x => x.Value)
+    .Where(x => !string.IsNullOrWhiteSpace(x))
+    .Select(x => x!.Trim().TrimEnd('/'))
+    .ToArray();
+
+if (allowedOrigins.Length == 0 && !string.IsNullOrWhiteSpace(allowedOriginsSection.Value))
+{
+    allowedOrigins = allowedOriginsSection.Value
+        .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(x => x.TrimEnd('/'))
+        .ToArray();
+}
 
 builder.Services.AddCors(options =>
 {
