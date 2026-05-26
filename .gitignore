@@ -37,6 +37,7 @@ publish/
 
 # Archivos locales de agentes
 AGENTS.md
+CLAUDE.md
 agents/
 
 # Base de datos local
