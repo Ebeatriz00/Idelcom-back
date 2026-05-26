@@ -9,10 +9,12 @@ namespace GlueMark.Middleware
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -23,14 +25,27 @@ namespace GlueMark.Middleware
             }
             catch (Application.Exceptions.BaseException ex)
             {
+                _logger.LogWarning(ex,
+                    "Excepción de dominio [{Code}] en {Method} {Path}",
+                    ex.ErrorCode, context.Request.Method, context.Request.Path);
+
                 await HandleBaseExceptionAsync(context, ex, "application");
             }
             catch (Infrastructure.Exceptions.BaseException ex)
             {
+                _logger.LogError(ex,
+                    "Excepción de infraestructura [{Code}] en {Method} {Path}",
+                    ex.ErrorCode, context.Request.Method, context.Request.Path);
+
                 await HandleBaseExceptionAsync(context, ex, "infrastructure");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "Excepción no controlada en {Method} {Path} — {ExceptionType}: {Message}",
+                    context.Request.Method, context.Request.Path,
+                    ex.GetType().Name, ex.Message);
+
                 await HandleUnexpectedExceptionAsync(context, ex);
             }
         }
@@ -48,7 +63,7 @@ namespace GlueMark.Middleware
             };
 
             if (!string.IsNullOrWhiteSpace(ex.Details))
-                response["details"] = ex.Details; // Solo se agrega si viene con contenido
+                response["details"] = ex.Details;
 
             return context.Response.WriteAsJsonAsync(response);
         }
