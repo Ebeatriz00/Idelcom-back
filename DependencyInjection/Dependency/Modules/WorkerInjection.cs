@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Worker;
+using Application.DTOs.Worker;
 using Application.UseCases.Worker;
 using Application.Validators.Worker;
 using Core.Interfaces;
@@ -28,6 +28,7 @@ namespace DependencyInjection.Dependency.Modules
             services.AddScoped<GetSelectSalesWorker>();
             services.AddScoped<GetSelectProyectWorker>();
             services.AddScoped<GetSelectOperationsWorker>();
+            services.AddScoped<GetSelectSquadWorker>();
 
             // Validators
             services.AddTransient<IValidator<WorkerCreateDto>, WorkerCreateValidator>();

@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Worker;
+using Application.DTOs.Worker;
 using Application.UseCases.DocumentType;
 using Application.UseCases.Worker;
 using Azure;
@@ -19,6 +19,7 @@ namespace Idelcom.Controllers
         private readonly GetSelectSalesWorker _getSelectSalesWorker;
         private readonly GetSelectProyectWorker _getSelectProyectWorker;
         private readonly GetSelectOperationsWorker _getSelectOperationsWorker;
+        private readonly GetSelectSquadWorker _getSelectSquadWorker;
 
         public WorkerController(
             CreateWorker createWorker,
@@ -29,7 +30,8 @@ namespace Idelcom.Controllers
             GetSelectWorker getSelectWorker,
             GetSelectSalesWorker getSelectSalesWorker,
             GetSelectProyectWorker getSelectProyectWorker,
-            GetSelectOperationsWorker getSelectOperationsWorker)
+            GetSelectOperationsWorker getSelectOperationsWorker,
+            GetSelectSquadWorker getSelectSquadWorker)
         {
             _createWorker = createWorker;
             _getAllWorker = getAllWorker;
@@ -40,6 +42,7 @@ namespace Idelcom.Controllers
             _getSelectSalesWorker = getSelectSalesWorker;
             _getSelectProyectWorker = getSelectProyectWorker;
             _getSelectOperationsWorker = getSelectOperationsWorker;
+            _getSelectSquadWorker = getSelectSquadWorker;
         }
 
         [HttpPost]
@@ -108,6 +111,19 @@ namespace Idelcom.Controllers
         [FromQuery] int pageSize = 20)
         {
             var result = await _getSelectOperationsWorker.ExecuteAsync(business_id, search, page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("WorkerSquadSelect")]
+        public async Task<IActionResult> WorkerSquadSelect(
+        [FromQuery] long business_id,
+        [FromQuery] long operations_id,
+        [FromQuery] string? search = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+        {
+            var result = await _getSelectSquadWorker.ExecuteAsync(business_id, operations_id, search, page, pageSize);
             return Ok(result);
         }
 
