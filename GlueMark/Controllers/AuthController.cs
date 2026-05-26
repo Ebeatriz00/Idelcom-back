@@ -54,13 +54,14 @@ namespace GlueMark.Api.Controllers
                 var ip = HttpContext.GetClientIp();
                 var result = await _getAuth.ExecuteAsync(dto, ip, ct);
 
-                // Configurar cookies HttpOnly
+                // Cookie del access token con 2 minutos extra sobre el JWT para que
+                // el browser siga enviándola mientras el frontend detecta la expiración y llama refresh.
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = Request.IsHttps,
                     SameSite = SameSiteMode.Lax,
-                    Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes),
+                    Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes + 2),
                     Path = "/"
                 };
 
@@ -237,8 +238,8 @@ namespace GlueMark.Api.Controllers
                 {
                     HttpOnly = true,
                     Secure = Request.IsHttps,
-                    SameSite = SameSiteMode.Lax,   
-                    Expires = accessExpiresAt,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = accessExpiresAt.AddMinutes(2),
                     Path = "/"
                 };
 
@@ -266,14 +267,12 @@ namespace GlueMark.Api.Controllers
             }
             catch (Infrastructure.Exceptions.RefreshTokenExpiredException ex)
             {
-                Response.Cookies.Delete("accessToken");
-                Response.Cookies.Delete("refreshToken");
+                ClearAuthCookies();
                 return Unauthorized(new { status = 0, code = "REFRESH_TOKEN_EXPIRED", errors = ex.Errors });
             }
             catch (Infrastructure.Exceptions.RefreshTokenInvalidException ex)
             {
-                Response.Cookies.Delete("accessToken");
-                Response.Cookies.Delete("refreshToken");
+                ClearAuthCookies();
                 return Unauthorized(new { status = 0, code = "REFRESH_TOKEN_INVALID", errors = ex.Errors });
             }
         }
@@ -316,10 +315,25 @@ namespace GlueMark.Api.Controllers
                 await _refreshTokens.RevokeAsync(refreshToken, "Logout manual", ct);
             }
 
-            Response.Cookies.Delete("accessToken", new CookieOptions { Path = "/" });
-            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
+            ClearAuthCookies();
 
             return Ok(new { ok = true });
+        }
+
+        private void ClearAuthCookies()
+        {
+            // Path="/" debe coincidir exactamente con el Path usado al setear las cookies.
+            // Sin esto el browser ignora el Delete y las cookies quedan atrapadas.
+            var deleteOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTime.UnixEpoch
+            };
+            Response.Cookies.Delete("accessToken", deleteOptions);
+            Response.Cookies.Delete("refreshToken", deleteOptions);
         }
 
         [HttpGet("bootstrap")]
