@@ -60,3 +60,5 @@ appsettings.json
 appsettings.*.json
 !appsettings.example.json
 !appsettings.*.example.json
+/.agents/*
+/skills-lock.json
