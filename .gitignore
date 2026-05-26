@@ -35,6 +35,13 @@ publish/
 .dotnet/
 .dotnet-cli/
 
+# Archivos locales de agentes
+AGENTS.md
+agents/
+
+# Base de datos local
+/Database/
+
 # Archivos temporales
 *.tmp
 *.temp
