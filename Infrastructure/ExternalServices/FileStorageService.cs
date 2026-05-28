@@ -133,6 +133,7 @@ namespace Infrastructure.ExternalServices
                 ".jpg" or ".jpeg" => "image/jpeg",
                 ".png" => "image/png",
                 ".webp" => "image/webp",
+                ".pdf" => "application/pdf",
                 _ => "application/octet-stream",
             };
         }

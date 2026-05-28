@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Operations.OperationsWorkOrder;
+using Application.DTOs.Operations.OperationsWorkOrder;
 using Application.UseCases.Operations.OperationsWorkOrder;
 using Application.Validators.Operations.OperationsWorkOrder;
 using Core.Interfaces.Operations;
@@ -17,6 +17,7 @@ namespace DependencyInjection.Dependency.Modules.Operations
             services.AddScoped<GetAllOperationsWorkOrder>();
             services.AddScoped<GetByIdOperationsWorkOrder>();
             services.AddScoped<DeleteOperationsWorkOrder>();
+            services.AddScoped<GetOperationsWorkOrderProgressReport>();
 
             services.AddTransient<IValidator<OperationsWorkOrderCreateDto>, OperationsWorkOrderCreateValidator>();
             services.AddTransient<IValidator<OperationsWorkOrderUpdateDto>, OperationsWorkOrderUpdateValidator>();

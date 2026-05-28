@@ -20,5 +20,6 @@ namespace Core.Projections.Operations
         public string? OperationStatusDesc { get; set; }
         public decimal? ProgressPercentage { get; set; }
         public string? StateColor { get; set; }
+        public Guid? ClosurePdfFileUid { get; set; }
     }
 }
