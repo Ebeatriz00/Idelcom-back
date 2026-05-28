@@ -25,7 +25,7 @@ namespace Infrastructure.Repositories
             _linkTokenService = linkTokenService;
         }
 
-        public async Task<PagedResult<Orders>> GetAllAsync(long businessId, string? search, int page, int pageSize)
+        public async Task<PagedResult<Orders>> GetAllAsync(long businessId, string? search,long? responsibleStaff, int page, int pageSize)
         {
             try
             {
@@ -41,6 +41,7 @@ namespace Infrastructure.Repositories
 
                 cmd.Parameters.AddWithValue("@BUSINESS_ID", businessId);
                 cmd.Parameters.AddWithValue("@SEARCH", (object?)(string.IsNullOrWhiteSpace(search) ? null : search.Trim()) ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@RESPONSIBLE_STAFF", (object?)(responsibleStaff.HasValue ? responsibleStaff.Value : null) ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@PAGE", page);
                 cmd.Parameters.AddWithValue("@PAGE_SIZE", pageSize);
 
