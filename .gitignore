@@ -61,3 +61,6 @@ appsettings.*.json
 !appsettings.*.example.json
 /.agents/*
 /skills-lock.json
+/sql_scripts
+/docs
+*.md

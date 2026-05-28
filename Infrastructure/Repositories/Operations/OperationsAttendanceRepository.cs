@@ -66,6 +66,7 @@ namespace Infrastructure.Repositories.Operations
                 async reader => new AppAttendanceDailyResult
                 {
                     Operations = await reader.ReadAsync<AppAttendanceOperationProjection>(),
+                    Configs = await reader.ReadAsync<AppAttendanceProjectConfigProjection>(),
                     WorkOrders = await reader.ReadAsync<AppAttendanceWorkOrderProjection>(),
                     Squads = await reader.ReadAsync<AppAttendanceSquadProjection>(),
                     Workers = await reader.ReadAsync<AppAttendanceWorkerProjection>(),
