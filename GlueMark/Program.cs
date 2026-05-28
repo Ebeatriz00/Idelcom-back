@@ -5,6 +5,7 @@ using Core.Options;
 using DependencyInjection.Dependency.ServiceExtensions;
 using GlueMark.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ using Serilog;
 using Serilog.Events;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -114,9 +116,7 @@ builder.Services.AddAuthentication(config =>
 })
 .AddJwtBearer(config =>
 {
-    // TODO: En entornos de producción, esta propiedad DEBE ser 'true' para obligar el uso de HTTPS.
-    // Se recomienda usar: config.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
-    config.RequireHttpsMetadata = false;
+    config.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     config.SaveToken = true;
 
     config.Events = new JwtBearerEvents
@@ -317,6 +317,37 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
 });
 
+// Rate limiting por IP para endpoints de autenticación.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    static string GetIp(HttpContext ctx) =>
+        ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim()
+        ?? ctx.Connection.RemoteIpAddress?.ToString()
+        ?? "unknown";
+
+    // Login: máx 10 intentos por minuto por IP.
+    options.AddPolicy("auth-login", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(GetIp(ctx), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        }));
+
+    // Refresh: máx 30 por minuto por IP (lo llama el frontend automáticamente).
+    options.AddPolicy("auth-refresh", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(GetIp(ctx), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        }));
+});
+
 var app = builder.Build();
 
 // Habilitación de Swagger en entornos de desarrollo o producción controlada.
@@ -343,6 +374,8 @@ app.UseRouting();
 
 // Aplicación de CORS antes de Auth.
 app.UseCors("AllowSpecificOrigin");
+
+app.UseRateLimiter();
 
 // Middlewares de seguridad: Autenticación y luego Autorización.
 app.UseAuthentication();

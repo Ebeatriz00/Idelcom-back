@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.Auth;
 using Application.Exceptions;
-using Application.UseCases.Auth; 
+using Application.UseCases.Auth;
 using Core.Options;
 using Core.Interfaces.Abstractions;
 using Core.Interfaces.Services;
@@ -8,11 +8,14 @@ using GlueMark.Extensions;
 using Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using SharedKernel;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using ITokenService = Core.Interfaces.Services.ITokenService;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
@@ -28,22 +31,26 @@ namespace GlueMark.Api.Controllers
         private readonly IRefreshTokenService _refreshTokens;
         private readonly ITokenBlacklist _blacklist;
         private readonly JwtOptions _jwtOptions;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             GetAuth getAuth,
             ITokenService tokens,
             IRefreshTokenService refreshTokens,
             ITokenBlacklist blacklist,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            ILogger<AuthController> logger)
         {
             _getAuth = getAuth;
             _tokens = tokens;
             _refreshTokens = refreshTokens;
             _blacklist = blacklist;
             _jwtOptions = jwtOptions.Value;
+            _logger = logger;
         }
 
         [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
         [HttpPost("login")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
@@ -99,14 +106,19 @@ namespace GlueMark.Api.Controllers
             }
             catch (AuthLockedOutException ex)
             {
-                if (ex.RetryAfter is TimeSpan ra)
-                    Response.Headers["Retry-After"] = ((int)Math.Ceiling(ra.TotalSeconds)).ToString();
+                var retrySeconds = ex.RetryAfter is TimeSpan ra
+                    ? (int)Math.Ceiling(ra.TotalSeconds)
+                    : (int?)null;
+
+                if (retrySeconds.HasValue)
+                    Response.Headers["Retry-After"] = retrySeconds.Value.ToString();
 
                 return StatusCode(StatusCodes.Status429TooManyRequests, new
                 {
                     status = 0,
                     code = "AUTH_LOCKED_OUT",
-                    errors = ex.Errors
+                    errors = ex.Errors,
+                    retryAfterSeconds = retrySeconds
                 });
             }
             catch (AuthInvalidCredentialsException ex)
@@ -115,7 +127,8 @@ namespace GlueMark.Api.Controllers
                 {
                     status = 0,
                     code = "AUTH_INVALID_CREDENTIALS",
-                    errors = new[] { new { code = "2001", message = ex.Message } }
+                    errors = new[] { new { code = "2001", message = ex.Message } },
+                    attemptsRemaining = ex.AttemptsRemaining
                 });
             }
             catch (Application.Exceptions.ValidationException ex)
@@ -139,62 +152,73 @@ namespace GlueMark.Api.Controllers
         }
         [AllowAnonymous]
         [HttpGet("session")]
-        public IActionResult GetSession()
+        public async Task<IActionResult> GetSession(CancellationToken ct)
         {
-            // 1) lee la cookie
+            var canRefresh = Request.Cookies.ContainsKey("refreshToken");
+
             if (!Request.Cookies.TryGetValue("accessToken", out var accessToken)
                 || string.IsNullOrEmpty(accessToken))
             {
-                return Ok(new
-                {
-                    authenticated = false,
-                    expiresAt = (DateTime?)null,
-                    remainingSeconds = 0,
-                    canRefresh = Request.Cookies.ContainsKey("refreshToken")
-                });
+                return Ok(new { authenticated = false, expiresAt = (DateTime?)null, remainingSeconds = 0, canRefresh });
             }
 
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwt = handler.ReadJwtToken(accessToken);
-
-                // exp en segundos UNIX
-                var expClaim = jwt.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
-                if (!long.TryParse(expClaim, out var expSec))
+                // Validación criptográfica de la firma, issuer y audience (sin verificar lifetime
+                // para poder reportar el estado aunque el token haya expirado).
+                var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+                var validationParams = new TokenValidationParameters
                 {
-                    return Ok(new
-                    {
-                        authenticated = false,
-                        expiresAt = (DateTime?)null,
-                        remainingSeconds = 0,
-                        canRefresh = Request.Cookies.ContainsKey("refreshToken")
-                    });
-                }
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtOptions.Audience,
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero
+                };
 
-                var exp = DateTimeOffset.FromUnixTimeSeconds(expSec).UtcDateTime;
+                var handler = new JsonWebTokenHandler();
+                var result = await handler.ValidateTokenAsync(accessToken, validationParams);
+
+                if (!result.IsValid)
+                    return Ok(new { authenticated = false, expiresAt = (DateTime?)null, remainingSeconds = 0, canRefresh });
+
+                var jwt = (JsonWebToken)result.SecurityToken;
+
+                var exp = jwt.ValidTo.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(jwt.ValidTo, DateTimeKind.Utc)
+                    : jwt.ValidTo.ToUniversalTime();
+
                 var remaining = (int)Math.Max(0, (exp - DateTime.UtcNow).TotalSeconds);
 
-                return Ok(new
+                if (remaining <= 0)
+                    return Ok(new { authenticated = false, expiresAt = exp, remainingSeconds = 0, canRefresh });
+
+                // Validación server-side: blacklist y sesión revocada.
+                var jti = jwt.Id;
+                var sid = jwt.Claims.FirstOrDefault(c => c.Type == "sid")?.Value;
+
+                if (!string.IsNullOrEmpty(jti) && await _blacklist.IsBlacklistedAsync(jti, ct))
+                    return Ok(new { authenticated = false, expiresAt = exp, remainingSeconds = 0, canRefresh, revoked = true });
+
+                if (!string.IsNullOrEmpty(sid))
                 {
-                    authenticated = remaining > 0,
-                    expiresAt = exp,
-                    remainingSeconds = remaining,
-                    canRefresh = Request.Cookies.ContainsKey("refreshToken")
-                });
+                    var sessionService = HttpContext.RequestServices.GetRequiredService<IUserSessionService>();
+                    if (await sessionService.IsRevokedAsync(sid, ct))
+                        return Ok(new { authenticated = false, expiresAt = exp, remainingSeconds = 0, canRefresh, revoked = true });
+                }
+
+                return Ok(new { authenticated = true, expiresAt = exp, remainingSeconds = remaining, canRefresh });
             }
             catch
             {
-                return Ok(new
-                {
-                    authenticated = false,
-                    expiresAt = (DateTime?)null,
-                    remainingSeconds = 0,
-                    canRefresh = Request.Cookies.ContainsKey("refreshToken")
-                });
+                return Ok(new { authenticated = false, expiresAt = (DateTime?)null, remainingSeconds = 0, canRefresh });
             }
         }
 
+        [Authorize]
         [HttpGet("me")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -208,6 +232,7 @@ namespace GlueMark.Api.Controllers
         }
 
         [AllowAnonymous]
+        [EnableRateLimiting("auth-refresh")]
         [HttpPost("refresh")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
@@ -224,14 +249,16 @@ namespace GlueMark.Api.Controllers
                     return _tokens.Create(userId, businessId, profileName, sid);
                 }
 
+                var ip = HttpContext.GetClientIp();
                 var (access, refresh) = await _refreshTokens.RotateAsync(
                     refreshToken,
                     IssueAccess,
-                    ip: HttpContext.GetClientIp(),
+                    ip: ip,
                     device: null,
                     newRefreshLifetime: TimeSpan.FromDays(7),
                     ct);
 
+                _logger.LogInformation("Refresh exitoso — IP: {Ip}", ip);
                 var accessExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireMinutes);
 
                 var accessCookieOptions = new CookieOptions
@@ -267,11 +294,13 @@ namespace GlueMark.Api.Controllers
             }
             catch (Infrastructure.Exceptions.RefreshTokenExpiredException ex)
             {
+                _logger.LogWarning("Refresh token expirado — IP: {Ip}", HttpContext.GetClientIp());
                 ClearAuthCookies();
                 return Unauthorized(new { status = 0, code = "REFRESH_TOKEN_EXPIRED", errors = ex.Errors });
             }
             catch (Infrastructure.Exceptions.RefreshTokenInvalidException ex)
             {
+                _logger.LogWarning("Refresh token inválido (posible reuso) — IP: {Ip}", HttpContext.GetClientIp());
                 ClearAuthCookies();
                 return Unauthorized(new { status = 0, code = "REFRESH_TOKEN_INVALID", errors = ex.Errors });
             }
@@ -281,23 +310,35 @@ namespace GlueMark.Api.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(CancellationToken ct)
         {
+            _logger.LogInformation("Logout — IP: {Ip}", HttpContext.GetClientIp());
+
             if (Request.Cookies.TryGetValue("accessToken", out var accessToken) &&
                 !string.IsNullOrWhiteSpace(accessToken))
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwt = handler.ReadJwtToken(accessToken);
-
-                var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
-                var exp = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
-
-                if (!string.IsNullOrWhiteSpace(jti) && long.TryParse(exp, out var expUnix))
+                var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+                var validationParams = new TokenValidationParameters
                 {
-                    var expiresAt = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
-                    var ttl = expiresAt - DateTime.UtcNow;
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtOptions.Audience,
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var handler = new JsonWebTokenHandler();
+                var result = await handler.ValidateTokenAsync(accessToken, validationParams);
+
+                if (result.IsValid)
+                {
+                    var jwt = (JsonWebToken)result.SecurityToken;
+                    var ttl = jwt.ValidTo.ToUniversalTime() - DateTime.UtcNow;
 
                     if (ttl > TimeSpan.Zero)
                     {
-                        await _blacklist.BlacklistAsync(jti, ttl, ct);
+                        await _blacklist.BlacklistAsync(jwt.Id, ttl, ct);
 
                         var sid = jwt.Claims.FirstOrDefault(c => c.Type == "sid")?.Value;
                         if (!string.IsNullOrWhiteSpace(sid))
@@ -336,6 +377,7 @@ namespace GlueMark.Api.Controllers
             Response.Cookies.Delete("refreshToken", deleteOptions);
         }
 
+        [Authorize]
         [HttpGet("bootstrap")]
         public async Task<IActionResult> Bootstrap(
         [FromServices] GetAuthBootstrapUseCase useCase,
@@ -347,6 +389,7 @@ namespace GlueMark.Api.Controllers
             return Ok(dto);
         }
 
+        [Authorize]
         [HttpPost("invalidate")]
         public async Task<IActionResult> Invalidate(
         [FromServices] InvalidateAuthCacheUseCase useCase,

@@ -4,6 +4,7 @@ using AutoMapper;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SharedKernel;
 using System.Security.Cryptography;
@@ -13,7 +14,6 @@ namespace Application.UseCases.Auth
     public sealed class AuthOptions
     {
         public TimeSpan RefreshLifetime { get; init; } = TimeSpan.FromDays(7);
-        public TimeSpan LockoutWindow { get; init; } = TimeSpan.FromMinutes(5);
         public bool PreloadAllowedModules { get; init; } = true;
     }
 
@@ -27,7 +27,7 @@ namespace Application.UseCases.Auth
         private readonly IRefreshTokenService _refreshTokens;
         private readonly IMapper _mapper;
         private readonly IOptions<AuthOptions> _opt;
-        private readonly TimeProvider _time; // si luego no lo usas, lo puedes volar
+        private readonly ILogger<GetAuth> _logger;
 
         public GetAuth(
             IAuthRepository repository,
@@ -38,7 +38,7 @@ namespace Application.UseCases.Auth
             IMapper mapper,
             IRefreshTokenService refreshTokens,
             IOptions<AuthOptions> opt,
-            TimeProvider timeProvider)
+            ILogger<GetAuth> logger)
         {
             _repository = repository;
             _passwords = passwords;
@@ -48,7 +48,7 @@ namespace Application.UseCases.Auth
             _mapper = mapper;
             _refreshTokens = refreshTokens;
             _opt = opt;
-            _time = timeProvider;
+            _logger = logger;
         }
 
         public async Task<AuthResponseDto> ExecuteAsync(
@@ -68,11 +68,15 @@ namespace Application.UseCases.Auth
 
             var (lookupKey, inputAttemptKey) = BuildKeys(dto, clientIp);
             var refreshLifetime = _opt.Value.RefreshLifetime;
-            var lockoutWindow = _opt.Value.LockoutWindow;
 
             // 2) Lock por IP/entrada
-            if (await _attempts.IsLockedOutAsync(inputAttemptKey, ct))
-                throw new AuthLockedOutException(retryAfter: lockoutWindow);
+            var inputRemaining = await _attempts.IsLockedOutAsync(inputAttemptKey, ct);
+            if (inputRemaining.HasValue)
+            {
+                _logger.LogWarning("Login bloqueado — entrada: {LookupKey} IP: {Ip} — tiempo restante: {Remaining}s",
+                    lookupKey, clientIp, (int)inputRemaining.Value.TotalSeconds);
+                throw new AuthLockedOutException(retryAfter: inputRemaining.Value);
+            }
 
             // 3) Lookup de usuario (por correo/username/etc.)
             var user = await _repository.AuthenticateAsync(lookupKey, ct);
@@ -80,17 +84,29 @@ namespace Application.UseCases.Auth
             // Si no existe o está inactivo → fake hash + registrar intento
             if (user is null || user.Status == "0")
             {
-                FakeVerify(); // ❗ ahora no depende del input, solo simula coste
-                await _attempts.RegisterFailureAsync(inputAttemptKey, ct);
-                throw new AuthInvalidCredentialsException();
+                FakeVerify();
+                var r = await _attempts.RegisterFailureAsync(inputAttemptKey, ct);
+                _logger.LogWarning("Login fallido — usuario no encontrado — entrada: {LookupKey} IP: {Ip}", lookupKey, clientIp);
+                if (r.IsNowLocked)
+                {
+                    _logger.LogWarning("Cuenta bloqueada — entrada: {LookupKey} IP: {Ip} — duración: {Seconds}s",
+                        lookupKey, clientIp, (int)(r.LockoutDuration?.TotalSeconds ?? 0));
+                    throw new AuthLockedOutException(retryAfter: r.LockoutDuration);
+                }
+                throw new AuthInvalidCredentialsException(attemptsRemaining: r.AttemptsBeforeNextLock);
             }
 
             // Ahora sí tiene sentido armar la key por cuenta
             var accountAttemptKey = BuildAccountKey(user.UsersId, clientIp);
 
             // 4) Lock por cuenta
-            if (await _attempts.IsLockedOutAsync(accountAttemptKey, ct))
-                throw new AuthLockedOutException(retryAfter: lockoutWindow);
+            var accountRemaining = await _attempts.IsLockedOutAsync(accountAttemptKey, ct);
+            if (accountRemaining.HasValue)
+            {
+                _logger.LogWarning("Login bloqueado — userId: {UserId} IP: {Ip} — tiempo restante: {Remaining}s",
+                    user.UsersId, clientIp, (int)accountRemaining.Value.TotalSeconds);
+                throw new AuthLockedOutException(retryAfter: accountRemaining.Value);
+            }
 
             // 5) Verificar password (y SIEMPRE limpiar el DTO en finally)
             bool ok;
@@ -103,19 +119,33 @@ namespace Application.UseCases.Auth
             }
             finally
             {
-                ZeroOut(dto); // limpia contraseña del DTO pase lo que pase
+                ZeroOut(dto);
             }
 
             if (!ok)
             {
-                await Task.WhenAll(
-                    _attempts.RegisterFailureAsync(inputAttemptKey, ct),
-                    _attempts.RegisterFailureAsync(accountAttemptKey, ct)
-                );
+                var inputResult   = await _attempts.RegisterFailureAsync(inputAttemptKey, ct);
+                var accountResult = await _attempts.RegisterFailureAsync(accountAttemptKey, ct);
 
-                // jitter anti-bruteforce
                 await Task.Delay(RandomJitter(100, 300), ct);
-                throw new AuthInvalidCredentialsException();
+
+                if (inputResult.IsNowLocked || accountResult.IsNowLocked)
+                {
+                    var lockDuration = inputResult.LockoutDuration ?? accountResult.LockoutDuration;
+                    _logger.LogWarning("Cuenta bloqueada tras múltiples fallos — userId: {UserId} IP: {Ip} — duración: {Seconds}s",
+                        user.UsersId, clientIp, (int)(lockDuration?.TotalSeconds ?? 0));
+                    throw new AuthLockedOutException(retryAfter: lockDuration);
+                }
+
+                var attemptsLeft = Math.Min(
+                    inputResult.AttemptsBeforeNextLock  ?? int.MaxValue,
+                    accountResult.AttemptsBeforeNextLock ?? int.MaxValue);
+
+                _logger.LogWarning("Contraseña incorrecta — userId: {UserId} IP: {Ip} — intentos restantes: {Remaining}",
+                    user.UsersId, clientIp, attemptsLeft == int.MaxValue ? (int?)null : attemptsLeft);
+
+                throw new AuthInvalidCredentialsException(
+                    attemptsRemaining: attemptsLeft == int.MaxValue ? null : attemptsLeft);
             }
 
             // 6) Éxito → limpiar locks
@@ -123,6 +153,8 @@ namespace Application.UseCases.Auth
                 _attempts.ResetAsync(inputAttemptKey, ct),
                 _attempts.ResetAsync(accountAttemptKey, ct)
             );
+            _logger.LogInformation("Login exitoso — userId: {UserId} businessId: {BusinessId} IP: {Ip}",
+                user.UsersId, user.BusinessId, clientIp);
             var sid = Guid.NewGuid().ToString("N");
             // 7) Emitir refresh token
             var refresh = await _refreshTokens.IssueAsync(

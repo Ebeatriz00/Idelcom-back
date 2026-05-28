@@ -1,4 +1,4 @@
-﻿using Core.Interfaces.Services;
+using Core.Interfaces.Services;
 using Core.Options;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -20,24 +20,29 @@ namespace Infrastructure.Security
         private static string FailKey(string key) => $"auth:fail:{key}";
         private static string LockKey(string key) => $"auth:lock:{key}";
 
-        public async Task<bool> IsLockedOutAsync(string key, CancellationToken ct = default)
+        public async Task<TimeSpan?> IsLockedOutAsync(string key, CancellationToken ct = default)
         {
             var lockedUntilIso = await _cache.GetStringAsync(LockKey(key), ct);
-            if (lockedUntilIso is null) return false;
+            if (lockedUntilIso is null) return null;
+
             if (DateTimeOffset.TryParse(lockedUntilIso, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var until))
             {
-                return until > DateTimeOffset.UtcNow;
+                var remaining = until - DateTimeOffset.UtcNow;
+                return remaining > TimeSpan.Zero ? remaining : null;
             }
-            return true;
+
+            return null;
         }
 
-        public async Task RegisterFailureAsync(string key, CancellationToken ct = default)
+        public async Task<LoginAttemptResult> RegisterFailureAsync(string key, CancellationToken ct = default)
         {
             var fk = FailKey(key);
             var raw = await _cache.GetStringAsync(fk, ct);
             var count = string.IsNullOrEmpty(raw) ? 0 : int.Parse(raw);
             count++;
 
+            // El contador persiste toda la ventana sin resetearse entre bloqueos
+            // para que los intentos escalen progresivamente.
             await _cache.SetStringAsync(
                 fk,
                 count.ToString(CultureInfo.InvariantCulture),
@@ -45,22 +50,40 @@ namespace Infrastructure.Security
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_opt.WindowMinutes)
                 },
-                ct
-            );
+                ct);
 
-            if (count >= _opt.MaxAttempts)
+            // Umbral que aplica al conteo actual (el de mayor valor alcanzado).
+            var currentStep = _opt.Steps
+                .Where(s => count >= s.AfterAttempts)
+                .OrderByDescending(s => s.AfterAttempts)
+                .FirstOrDefault();
+
+            if (currentStep is not null)
             {
-                var until = DateTimeOffset.UtcNow.AddMinutes(_opt.LockoutMinutes);
+                var lockoutDuration = TimeSpan.FromSeconds(currentStep.LockoutSeconds);
+                var until = DateTimeOffset.UtcNow.Add(lockoutDuration);
+
                 await _cache.SetStringAsync(
-                    LockKey(key),                
-                    until.ToString("O"),        
+                    LockKey(key),
+                    until.ToString("O"),
                     new DistributedCacheEntryOptions
                     {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(_opt.LockoutMinutes)
-                    }, ct);
+                        AbsoluteExpirationRelativeToNow = lockoutDuration
+                    },
+                    ct);
 
-                await _cache.RemoveAsync(fk, ct); 
+                return new LoginAttemptResult(IsNowLocked: true, LockoutDuration: lockoutDuration, AttemptsBeforeNextLock: null);
             }
+
+            // Calcula cuántos intentos faltan para el próximo bloqueo.
+            var nextStep = _opt.Steps
+                .Where(s => s.AfterAttempts > count)
+                .OrderBy(s => s.AfterAttempts)
+                .FirstOrDefault();
+
+            var attemptsLeft = nextStep is not null ? nextStep.AfterAttempts - count : (int?)null;
+
+            return new LoginAttemptResult(IsNowLocked: false, LockoutDuration: null, AttemptsBeforeNextLock: attemptsLeft);
         }
 
         public Task ResetAsync(string key, CancellationToken ct = default)
