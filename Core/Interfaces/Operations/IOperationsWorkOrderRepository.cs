@@ -1,5 +1,6 @@
-﻿using Core.Entities.Operations;
+using Core.Entities.Operations;
 using Core.Entities.paginations;
+using Core.Projections.Operations;
 using SharedKernel;
 using System.Data;
 
@@ -13,5 +14,6 @@ namespace Core.Interfaces.Operations
         Task<BaseResponseId> CreateAsync(OperationWorkOrder entity, long userId, long businessId, IDbTransaction transaction);
         Task<BaseResponse> UpdateAsync(OperationWorkOrder entity, IDbTransaction transaction);
         Task<BaseResponse> DeleteAsync(long workOrderId, long businessId, long userId, IDbTransaction transaction);
+        Task<(IEnumerable<OperationsWorkOrderSummaryProjection> Summaries, IEnumerable<OperationsWorkOrderProgressDetailProjection> Details)> GetProgressReportAsync(long businessId, long operationsId);
     }
 }

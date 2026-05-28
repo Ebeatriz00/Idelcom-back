@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Operations.Operations;
+using Application.DTOs.Operations.Operations;
 using Application.UseCases.Operations.Operations;
 using Idelcom.Controllers.Base;
 using Microsoft.AspNetCore.Authorization;
@@ -54,7 +54,7 @@ namespace Idelcom.Controllers.Operations
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] OperationsUpdateDto dto)
+        public async Task<IActionResult> Update([FromForm] OperationsUpdateDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();

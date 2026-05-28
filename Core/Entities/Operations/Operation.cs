@@ -1,4 +1,4 @@
-﻿using Core.Attributes;
+using Core.Attributes;
 using SharedKernel;
 
 namespace Core.Entities.Operations
@@ -38,5 +38,8 @@ namespace Core.Entities.Operations
         [AuditField("Estado de operación")]
         public int? OperationsStatusId { get; set; }
         public decimal? ProgressPercentage { get; set; }
+
+        [AuditField("Acta de Cierre UID")]
+        public Guid? ClosurePdfFileUid { get; set; }
     }
 }

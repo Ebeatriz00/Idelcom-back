@@ -1,6 +1,7 @@
-﻿using Application.DTOs.Operations.Operations;
+using Application.DTOs.Operations.Operations;
 using AutoMapper;
 using Core.Entities.Operations;
+using Core.Interfaces;
 using Core.Interfaces.Audit;
 using Core.Interfaces.Operations;
 using FluentValidation;
@@ -17,7 +18,8 @@ namespace Application.UseCases.Operations.Operations
         IAuditLogFactory auditLogFactory,
         IMapper mapper,
         ISqlConnectionFactory sqlConnectionFactory,
-        IValidator<OperationsUpdateDto> validator
+        IValidator<OperationsUpdateDto> validator,
+        IStorageService storageService
         )
     {
         private readonly IOperationsRepository _repository = repository;
@@ -26,6 +28,7 @@ namespace Application.UseCases.Operations.Operations
         private readonly IMapper _mapper = mapper;
         private readonly ISqlConnectionFactory _sqlConnectionFactory = sqlConnectionFactory;
         private readonly IValidator<OperationsUpdateDto> _validator = validator;
+        private readonly IStorageService _storageService = storageService;
 
         public async Task<BaseResponse> ExecuteAsync(OperationsUpdateDto dto, long userId, long businessId)
         {
@@ -56,6 +59,17 @@ namespace Application.UseCases.Operations.Operations
             try
             {
                 var entity = _mapper.Map<Operation>(dto);
+
+                if (dto.ClosurePdfFile != null)
+                {
+                    using var stream = dto.ClosurePdfFile.OpenReadStream();
+                    entity.ClosurePdfFileUid = await _storageService.UploadAsync(
+                        stream,
+                        dto.ClosurePdfFile.FileName,
+                        "Operations/ClosureAct/PDF",
+                        userId);
+                }
+
                 var updated = await _repository.UpdateAsync(entity, userId, businessId, transaction);
 
                 entity.BusinessId = businessId;

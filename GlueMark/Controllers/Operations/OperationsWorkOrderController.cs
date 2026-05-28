@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Operations.OperationsWorkOrder;
+using Application.DTOs.Operations.OperationsWorkOrder;
 using Application.UseCases.Operations.OperationsWorkOrder;
 using Idelcom.Controllers.Base;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +14,8 @@ namespace Idelcom.Controllers.Operations
         UpdateOperationsWorkOrder updateOperationsWorkOrder,
         DeleteOperationsWorkOrder deleteOperationsWorkOrder,
         GetAllOperationsWorkOrder getAllOperationsWorkOrder,
-        GetByIdOperationsWorkOrder getByIdOperationsWorkOrder
+        GetByIdOperationsWorkOrder getByIdOperationsWorkOrder,
+        GetOperationsWorkOrderProgressReport getOperationsWorkOrderProgressReport
         ) : BaseController
     {
         private readonly CreateOperationsWorkOrder _createOperationsWorkOrder = createOperationsWorkOrder;
@@ -22,6 +23,7 @@ namespace Idelcom.Controllers.Operations
         private readonly DeleteOperationsWorkOrder _deleteOperationsWorkOrder = deleteOperationsWorkOrder;
         private readonly GetAllOperationsWorkOrder _getAllOperationsWorkOrder = getAllOperationsWorkOrder;
         private readonly GetByIdOperationsWorkOrder _getByIdOperationsWorkOrder = getByIdOperationsWorkOrder;
+        private readonly GetOperationsWorkOrderProgressReport _getOperationsWorkOrderProgressReport = getOperationsWorkOrderProgressReport;
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OperationsWorkOrderCreateDto dto)
@@ -69,6 +71,15 @@ namespace Idelcom.Controllers.Operations
             var businessId = GetCurrentBusinessId();
 
             var result = await _getByIdOperationsWorkOrder.ExecuteAsync(workOrderId, businessId);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProgressReport(long operationsId)
+        {
+            var businessId = GetCurrentBusinessId();
+
+            var result = await _getOperationsWorkOrderProgressReport.ExecuteAsync(businessId, operationsId);
             return Ok(result);
         }
     }
