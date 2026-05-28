@@ -10,7 +10,7 @@ namespace Core.Interfaces
 {
     public interface IOrdersRepository
     {
-        Task<PagedResult<Orders>> GetAllAsync(long businessId, string? search, int page, int pageSize);
+        Task<PagedResult<Orders>> GetAllAsync(long businessId, string? search, long? responsibleStaff, int page, int pageSize);
         Task<bool> AddSsomaAsync(IEnumerable<Orders> entities);
         Task<bool> ExistsSsomaAsync(long operationsId, long workerId);
         Task<bool> AddQualitySupervisorAsync(Orders entity);

@@ -33,12 +33,13 @@ namespace Idelcom.Controllers
         [Route("OrdersList")]
         public async Task<IActionResult> GetList(
             [FromQuery] long businessId,
-            [FromQuery] string search = null,
+            [FromQuery] string? search = null,
+            [FromQuery] long? responsibleStaff = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10 )
 
         {
-            var result = await _getAllOrders.ExecuteAsync( businessId, search, page, pageSize );
+            var result = await _getAllOrders.ExecuteAsync( businessId, search, responsibleStaff, page, pageSize );
             if (result == null || !result.Items.Any())
                 return NotFound(new { message = "No se encontraron Ordenes" });
 

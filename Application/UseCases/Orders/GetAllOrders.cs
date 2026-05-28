@@ -20,9 +20,9 @@ namespace Application.UseCases.Orders
             _ordersRepository = ordersRepository;
             _mapper = mapper;
         }
-        public async Task<PagedResult<OrdersResponseDto>> ExecuteAsync(long businessId, string? search, int page, int pageSize)
+        public async Task<PagedResult<OrdersResponseDto>> ExecuteAsync(long businessId, string? search, long? responsibleStaff, int page, int pageSize)
         {
-            var entities = await _ordersRepository.GetAllAsync(businessId, search, page, pageSize);
+            var entities = await _ordersRepository.GetAllAsync(businessId, search, responsibleStaff, page, pageSize);
             return _mapper.Map<PagedResult<OrdersResponseDto>>(entities);
         }
     }
