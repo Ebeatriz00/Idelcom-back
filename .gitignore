@@ -49,7 +49,6 @@ agents/
 *.log
 *.cache
 *.lscache
-
 # Sistema operativo
 .DS_Store
 Thumbs.db

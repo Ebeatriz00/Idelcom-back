@@ -51,16 +51,19 @@ namespace Application.UseCases.AppAuth
             var attemptKey = $"APP_LOGIN_{lookupKey}_{clientIp}";
 
             // verificación de políticas de bloqueo para mitigar ataques de fuerza bruta
-            if (await _attempts.IsLockedOutAsync(attemptKey, ct))
-                throw new AuthLockedOutException(retryAfter: TimeSpan.FromMinutes(5));
+            var appRemaining = await _attempts.IsLockedOutAsync(attemptKey, ct);
+            if (appRemaining.HasValue)
+                throw new AuthLockedOutException(retryAfter: appRemaining.Value);
 
             // recuperación del usuario y validación de su estado de activación
             var user = await _authRepository.AuthenticateAsync(lookupKey, ct);
 
             if (user is null || user.Status == "0")
             {
-                await _attempts.RegisterFailureAsync(attemptKey, ct);
-                throw new AuthInvalidCredentialsException();
+                var r = await _attempts.RegisterFailureAsync(attemptKey, ct);
+                if (r.IsNowLocked)
+                    throw new AuthLockedOutException(retryAfter: r.LockoutDuration);
+                throw new AuthInvalidCredentialsException(attemptsRemaining: r.AttemptsBeforeNextLock);
             }
 
             // verificación criptográfica de la contraseña
@@ -77,8 +80,10 @@ namespace Application.UseCases.AppAuth
 
             if (!isPasswordValid)
             {
-                await _attempts.RegisterFailureAsync(attemptKey, ct);
-                throw new AuthInvalidCredentialsException();
+                var r = await _attempts.RegisterFailureAsync(attemptKey, ct);
+                if (r.IsNowLocked)
+                    throw new AuthLockedOutException(retryAfter: r.LockoutDuration);
+                throw new AuthInvalidCredentialsException(attemptsRemaining: r.AttemptsBeforeNextLock);
             }
 
             // limpieza del historial de intentos tras una autenticación exitosa
