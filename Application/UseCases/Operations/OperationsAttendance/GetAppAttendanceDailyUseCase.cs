@@ -23,11 +23,15 @@ namespace Application.UseCases.Operations.OperationsAttendance
                 AttendanceStatuses = _mapper.Map<List<AppAttendanceStatusDto>>(result.Statuses)
             };
 
-            // Construir jerarquía: Operations -> WorkOrders -> Squads -> Workers/Sessions
+            // Construir jerarquía: Operations -> ProjectConfigs -> WorkOrders -> Squads -> Workers/Sessions
 
             foreach (var opProj in result.Operations)
             {
                 var opDto = _mapper.Map<AppAttendanceOperationDto>(opProj);
+
+                // Mapear configuraciones (turnos) de esta operación
+                var configProjs = result.Configs.Where(c => c.OperationsId == opProj.OperationsId);
+                opDto.ProjectConfigs = _mapper.Map<List<AppAttendanceProjectConfigDto>>(configProjs);
 
                 // Filtrar OTs de esta operación
                 var workOrderProjs = result.WorkOrders.Where(wo => wo.OperationsId == opProj.OperationsId);
@@ -61,7 +65,7 @@ namespace Application.UseCases.Operations.OperationsAttendance
                         {
                             var workerDto = _mapper.Map<AppAttendanceWorkerDto>(workerProj);
 
-                            // Buscar asistencia por AssignmentId (o WorkerId según el SP)
+                            // Buscar asistencia por AssignmentId
                             var detailProj = result.Details.FirstOrDefault(d => d.AssignmentId == workerProj.AssignmentId);
                             if (detailProj != null)
                             {

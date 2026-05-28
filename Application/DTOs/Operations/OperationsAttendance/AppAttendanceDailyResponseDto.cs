@@ -12,7 +12,7 @@ namespace Application.DTOs.Operations.OperationsAttendance
     {
         public long OperationsId { get; set; }
         public string OperationsDesc { get; set; } = string.Empty;
-        public AppAttendanceProjectConfigDto ProjectConfig { get; set; } = new();
+        public List<AppAttendanceProjectConfigDto> ProjectConfigs { get; set; } = [];
         public List<AppAttendanceWorkOrderDto> WorkOrders { get; set; } = [];
     }
 
@@ -21,6 +21,8 @@ namespace Application.DTOs.Operations.OperationsAttendance
         public long WorkOrderId { get; set; }
         public string WorkOrderCode { get; set; } = string.Empty;
         public string WorkOrderName { get; set; } = string.Empty;
+        public string StartDate { get; set; } = string.Empty;
+        public string? EndDate { get; set; }
         public string Location { get; set; } = string.Empty;
         public bool IsAdministrative { get; set; }
         public List<AppAttendanceSquadDto> Squads { get; set; } = [];
@@ -28,17 +30,20 @@ namespace Application.DTOs.Operations.OperationsAttendance
 
     public class AppAttendanceProjectConfigDto
     {
+        public long OperationsProjectConfigId { get; set; }
         public string EntryTime { get; set; } = string.Empty;
         public string DepartureTime { get; set; } = string.Empty;
         public bool AllowDelay { get; set; }
         public int MinutesTolerance { get; set; }
         public string BeforeOfficialTime { get; set; } = string.Empty;
         public bool IsRequirePhoto { get; set; }
+        public int Shift { get; set; }
     }
 
     public class AppAttendanceSquadDto
     {
         public long SquadId { get; set; }
+        public long? OperationsProjectConfigId { get; set; }
         public string SquadName { get; set; } = string.Empty;
         public string SquadCategory { get; set; } = string.Empty;
         public AppAttendanceTechLeaderDto TechLeader { get; set; } = new();

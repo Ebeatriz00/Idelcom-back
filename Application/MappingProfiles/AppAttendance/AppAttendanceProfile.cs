@@ -11,14 +11,19 @@ namespace Application.MappingProfiles.AppAttendance
         {
             // 1. Mapeos para la consulta (Proyecciones -> DTOs)
             CreateMap<AppAttendanceOperationProjection, AppAttendanceOperationDto>()
-                .ForMember(dest => dest.ProjectConfig, opt => opt.MapFrom(src => src));
+                .ForMember(dest => dest.ProjectConfigs, opt => opt.Ignore());
 
-            CreateMap<AppAttendanceOperationProjection, AppAttendanceProjectConfigDto>()
+            CreateMap<AppAttendanceProjectConfigProjection, AppAttendanceProjectConfigDto>()
                 .ForMember(dest => dest.EntryTime, opt => opt.MapFrom(src => src.EntryTime.ToString(@"hh\:mm\:ss")))
                 .ForMember(dest => dest.DepartureTime, opt => opt.MapFrom(src => src.DepartureTime.ToString(@"hh\:mm\:ss")))
                 .ForMember(dest => dest.BeforeOfficialTime, opt => opt.MapFrom(src => src.BeforeOfficialTime.ToString(@"hh\:mm\:ss")));
 
+            CreateMap<AppAttendanceWorkOrderProjection, AppAttendanceWorkOrderDto>()
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : null));
+
             CreateMap<AppAttendanceSquadProjection, AppAttendanceSquadDto>()
+                .ForMember(dest => dest.OperationsProjectConfigId, opt => opt.MapFrom(src => src.OperationsProjectConfigId))
                 .ForMember(dest => dest.TechLeader, opt => opt.MapFrom(src => new AppAttendanceTechLeaderDto
                 {
                     WorkerId = src.TechLeaderId,
