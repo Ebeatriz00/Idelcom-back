@@ -25,6 +25,7 @@ namespace Infrastructure.Repositories.Operations
                     entity.MeasurementUnitId,
                     entity.ComplexityId,
                     entity.TargetQuantity,
+                    entity.ParentActivityId,
                     CreateUser = userId
                 })
                     .WithOutputLong("@ActivityId")
@@ -150,6 +151,7 @@ namespace Infrastructure.Repositories.Operations
                     entity.MeasurementUnitId,
                     entity.ComplexityId,
                     entity.TargetQuantity,
+                    entity.ParentActivityId,
                     UpdateUser = userId
                 })
                     .WithOutputInt("@COutput")

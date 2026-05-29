@@ -43,5 +43,8 @@ namespace Core.Entities.Operations
 
         [AuditField("Porcentaje de avance")]
         public decimal ProgressPercentage { get; set; }
+
+        [AuditField("ID Actividad Padre")]
+        public long? ParentActivityId { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Core.Projections.Operations
+namespace Core.Projections.Operations
 {
     public class AppActivityWorkOrderProjection
     {

@@ -14,5 +14,6 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public decimal ActivityProgress { get; set; }
         public string? MeasurementUnitName { get; set; }
         public string? ComplexityName { get; set; }
+        public long? ParentActivityId { get; set; }
     }
 }
