@@ -1,5 +1,6 @@
 using Application.DTOs.Operations.OperationsWorkOrderActivity;
 using Core.Interfaces.Operations;
+using Core.Projections.Operations;
 
 namespace Application.UseCases.Operations.OperationsWorkOrderActivity
 {
@@ -9,9 +10,9 @@ namespace Application.UseCases.Operations.OperationsWorkOrderActivity
 
         public async Task<AppActivitiesListResponseDto> ExecuteAsync(long userId, long businessId)
         {
-            var flatData = await _repository.GetAppActivitiesByResponsibleAsync(userId, businessId);
+            var (operations, workOrders, rootActivities, subActivities) = await _repository.GetAppActivitiesByResponsibleAsync(userId, businessId);
 
-            if (flatData == null || !flatData.Any())
+            if (operations == null || !operations.Any())
             {
                 return new AppActivitiesListResponseDto
                 {
@@ -20,33 +21,35 @@ namespace Application.UseCases.Operations.OperationsWorkOrderActivity
                 };
             }
 
-            var groupedData = flatData
-                .GroupBy(p => new { p.OperationId, p.OperationName })
-                .Select(projectGroup => new AppProjectGroupResponseDto
-                {
-                    OperationId = projectGroup.Key.OperationId,
-                    OperationName = projectGroup.Key.OperationName,
-                    WorkOrders = projectGroup
-                        .GroupBy(wo => new { wo.WorkOrderId, wo.WorkOrderName, wo.WorkOrderProgress })
-                        .Select(woGroup => new AppWorkOrderGroupResponseDto
-                        {
-                            WorkOrderId = woGroup.Key.WorkOrderId,
-                            WorkOrderName = woGroup.Key.WorkOrderName,
-                            WorkOrderProgress = woGroup.Key.WorkOrderProgress,
-                            Activities = woGroup.Select(a => new AppActivityDetailResponseDto
-                            {
-                                ActivityId = a.ActivityId,
-                                ActivityName = a.ActivityName,
-                                TargetQuantity = a.TargetQuantity,
-                                CurrentQuantity = a.CurrentQuantity,
-                                ActivityProgress = a.ActivityProgress,
-                                MeasurementUnitName = a.MeasurementUnitName,
-                                MeasurementUnitSymbol = a.MeasurementUnitSymbol,
-                                ComplexityName = a.ComplexityName,
-                                ComplexityWeightFactor = a.ComplexityWeightFactor
-                            }).ToList()
-                        }).ToList()
-                }).ToList();
+            var subActivitiesByParent = subActivities
+                .Where(s => s.ParentActivityId.HasValue)
+                .GroupBy(s => s.ParentActivityId!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var rootActivitiesByWorkOrder = rootActivities
+                .GroupBy(r => r.WorkOrderId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var workOrdersByOperation = workOrders
+                .GroupBy(w => w.OperationId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var groupedData = operations.Select(op => new AppProjectGroupResponseDto
+            {
+                OperationId = op.OperationId,
+                OperationName = op.OperationName,
+                WorkOrders = workOrdersByOperation.TryGetValue(op.OperationId, out var opWorkOrders)
+                    ? opWorkOrders.Select(wo => new AppWorkOrderGroupResponseDto
+                    {
+                        WorkOrderId = wo.WorkOrderId,
+                        WorkOrderName = wo.WorkOrderName,
+                        WorkOrderProgress = wo.WorkOrderProgress,
+                        Activities = rootActivitiesByWorkOrder.TryGetValue(wo.WorkOrderId, out var woRootActivities)
+                            ? woRootActivities.Select(ra => MapToActivityDto(ra, subActivitiesByParent)).ToList()
+                            : new List<AppActivityDetailResponseDto>()
+                    }).ToList()
+                    : new List<AppWorkOrderGroupResponseDto>()
+            }).ToList();
 
             return new AppActivitiesListResponseDto
             {
@@ -54,6 +57,55 @@ namespace Application.UseCases.Operations.OperationsWorkOrderActivity
                 Message = "Actividades recuperadas exitosamente.",
                 Data = groupedData
             };
+        }
+
+        private static AppActivityDetailResponseDto MapToActivityDto(AppRootActivityProjection ra, Dictionary<long, List<AppSubActivityProjection>> subActivitiesByParent)
+        {
+            var dto = new AppActivityDetailResponseDto
+            {
+                ActivityId = ra.ActivityId,
+                ActivityName = ra.ActivityName,
+                TargetQuantity = ra.TargetQuantity,
+                CurrentQuantity = ra.CurrentQuantity,
+                ActivityProgress = ra.ActivityProgress,
+                MeasurementUnitName = ra.MeasurementUnitName,
+                MeasurementUnitSymbol = ra.MeasurementUnitSymbol,
+                ComplexityName = ra.ComplexityName,
+                ComplexityWeightFactor = ra.ComplexityWeightFactor,
+                HasChildren = ra.HasChildren
+            };
+
+            if (ra.HasChildren && subActivitiesByParent.TryGetValue(ra.ActivityId, out var children))
+            {
+                dto.SubActivities = children.Select(c => MapSubToActivityDto(c, subActivitiesByParent)).ToList();
+            }
+
+            return dto;
+        }
+
+        private static AppActivityDetailResponseDto MapSubToActivityDto(AppSubActivityProjection sa, Dictionary<long, List<AppSubActivityProjection>> subActivitiesByParent)
+        {
+            var dto = new AppActivityDetailResponseDto
+            {
+                ActivityId = sa.ActivityId,
+                ParentActivityId = sa.ParentActivityId,
+                ActivityName = sa.ActivityName,
+                TargetQuantity = sa.TargetQuantity,
+                CurrentQuantity = sa.CurrentQuantity,
+                ActivityProgress = sa.ActivityProgress,
+                MeasurementUnitName = sa.MeasurementUnitName,
+                MeasurementUnitSymbol = sa.MeasurementUnitSymbol,
+                ComplexityName = sa.ComplexityName,
+                ComplexityWeightFactor = sa.ComplexityWeightFactor,
+                HasChildren = subActivitiesByParent.ContainsKey(sa.ActivityId)
+            };
+
+            if (subActivitiesByParent.TryGetValue(sa.ActivityId, out var children))
+            {
+                dto.SubActivities = children.Select(c => MapSubToActivityDto(c, subActivitiesByParent)).ToList();
+            }
+
+            return dto;
         }
     }
 }

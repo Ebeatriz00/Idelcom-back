@@ -25,6 +25,7 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
     public class AppActivityDetailResponseDto
     {
         public long ActivityId { get; set; }
+        public long? ParentActivityId { get; set; }
         public string? ActivityName { get; set; }
         public decimal TargetQuantity { get; set; }
         public decimal CurrentQuantity { get; set; }
@@ -33,5 +34,7 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public string? MeasurementUnitSymbol { get; set; }
         public string? ComplexityName { get; set; }
         public decimal ComplexityWeightFactor { get; set; }
+        public bool HasChildren { get; set; }
+        public List<AppActivityDetailResponseDto> SubActivities { get; set; } = new();
     }
 }
