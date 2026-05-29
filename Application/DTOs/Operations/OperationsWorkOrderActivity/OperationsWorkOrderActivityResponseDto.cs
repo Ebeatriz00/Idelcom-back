@@ -14,5 +14,6 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public decimal TargetQuantity { get; set; }
         public decimal CurrentQuantity { get; set; }
         public decimal ProgressPercentage { get; set; }
+        public long? ParentActivityId { get; set; }
     }
 }

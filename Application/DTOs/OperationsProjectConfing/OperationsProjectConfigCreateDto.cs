@@ -20,6 +20,8 @@ namespace Application.DTOs.OperationsProjectConfing
         public bool? IsRequireOvertime { get; set; }
         public bool? IsRequireOvertimeApproval { get; set; }
         public int Shift { get; set; }
+        public bool? IsRequireAppAttendance { get; set; }
+        public bool? IsRequireGroupPhoto { get; set; }
         public long CreateUser { get; set; }
     }
 }

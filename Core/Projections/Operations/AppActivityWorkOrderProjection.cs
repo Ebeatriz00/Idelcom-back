@@ -1,4 +1,4 @@
-﻿namespace Core.Projections.Operations
+namespace Core.Projections.Operations
 {
     public class AppActivityWorkOrderProjection
     {
@@ -16,5 +16,6 @@
         public string? MeasurementUnitSymbol { get; set; }
         public string? ComplexityName { get; set; }
         public decimal ComplexityWeightFactor { get; set; }
+        public long? ParentActivityId { get; set; }
     }
 }

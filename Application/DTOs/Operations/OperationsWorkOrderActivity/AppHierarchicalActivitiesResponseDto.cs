@@ -33,5 +33,6 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public string? MeasurementUnitSymbol { get; set; }
         public string? ComplexityName { get; set; }
         public decimal ComplexityWeightFactor { get; set; }
+        public long? ParentActivityId { get; set; }
     }
 }

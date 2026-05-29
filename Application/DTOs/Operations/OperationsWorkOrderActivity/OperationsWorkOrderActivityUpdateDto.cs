@@ -8,5 +8,6 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public long MeasurementUnitId { get; set; }
         public int ComplexityId { get; set; }
         public decimal TargetQuantity { get; set; }
+        public long? ParentActivityId { get; set; }
     }
 }
