@@ -40,5 +40,11 @@ namespace Core.Entities.Operations
 
         [AuditField("Turno")]
         public int Shift { get; set; }
+
+        [AuditField("Asistencia por aplicativo")]
+        public bool? IsRequireAppAttendance { get; set; }
+
+        [AuditField("Requiere foto grupal")]
+        public bool? IsRequireGroupPhoto { get; set; }
     }
 }

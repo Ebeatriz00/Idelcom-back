@@ -14,12 +14,15 @@ namespace GlueMark.Controllers
 
         [AllowAnonymous]
         [HttpGet("{id:guid}")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)] // 24h cache
         public async Task<IActionResult> GetFile(Guid id)
         {
             try
             {
                 var result = await _storageService.GetStreamAsync(id);
+                
+                // Solo guardamos en caché si la descarga fue exitosa
+                Response.Headers.Append("Cache-Control", "public,max-age=86400");
+                
                 return File(result.Stream, result.MimeType, result.FileName);
             }
             catch (FileNotFoundException ex)
