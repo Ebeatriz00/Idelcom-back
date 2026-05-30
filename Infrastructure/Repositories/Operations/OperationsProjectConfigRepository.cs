@@ -29,6 +29,8 @@ namespace Infrastructure.Repositories.Operations
                     entity.IsRequireOvertime,
                     entity.IsRequireOvertimeApproval,
                     entity.Shift,
+                    entity.IsRequireAppAttendance,
+                    entity.IsRequireGroupPhoto,
                     entity.CreateUser
                 })
                 .WithOutputLong("@Id")
@@ -117,6 +119,8 @@ namespace Infrastructure.Repositories.Operations
                     entity.IsRequireOvertime,
                     entity.IsRequireOvertimeApproval,
                     entity.Shift,
+                    entity.IsRequireAppAttendance,
+                    entity.IsRequireGroupPhoto,
                     UpdateUser = entity.UpdateUser
                 })
                 .WithOutputInt("@cOutput")

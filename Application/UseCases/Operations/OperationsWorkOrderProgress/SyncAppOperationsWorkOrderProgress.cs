@@ -75,9 +75,10 @@ namespace Application.UseCases.Operations.OperationsWorkOrderProgress
                         // Vincular la foto con el avance de obra en la tabla puente
                         await _photoRepository.InsertPhotoAsync(progressId, fileGuid, userId);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         // En sincronización multimodal, un fallo en una foto no debe revertir el avance.
+                        Console.WriteLine(ex.ToString());
                         continue;
                     }
                 }

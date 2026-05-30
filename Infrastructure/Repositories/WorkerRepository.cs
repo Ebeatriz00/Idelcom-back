@@ -288,6 +288,41 @@ namespace Infrastructure.Repositories
             };
         }
 
+        public async Task<PagedSelect<OptionItem>> GetWorkerSquadSelectAsync(long businessId, long operationsId, string? search, int page, int pageSize)
+        {
+            var items = new List<OptionItem>();
+            using var cn = _connectionFactory.CreateConnection();
+            await cn.OpenAsync();
+
+            using var cmd = new SqlCommand("SP_WS_WORKER_SQUAD_SELECT", cn) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.AddWithValue("@BUSINESS_ID", businessId);
+            cmd.Parameters.AddWithValue("@OPERATIONS_ID", operationsId);
+            cmd.Parameters.AddWithValue("@SEARCH", (object?)(string.IsNullOrWhiteSpace(search) ? null : search.Trim()) ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@PAGE", page);
+            cmd.Parameters.AddWithValue("@PAGE_SIZE", pageSize);
+
+            using var dr = await cmd.ExecuteReaderAsync();
+            while (await dr.ReadAsync())
+            {
+                items.Add(new OptionItem
+                {
+                    Value = dr.GetInt64(0),
+                    Label = dr.GetString(1)
+                });
+            }
+
+            var hasMore = items.Count > pageSize;
+            if (hasMore) items.RemoveAt(items.Count - 1);
+
+            return new PagedSelect<OptionItem>
+            {
+                Items = items,
+                HasMore = hasMore,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
 
         public async Task<Worker> GetByIdAsync(long workerId)
         {

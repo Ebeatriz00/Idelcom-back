@@ -1,27 +1,38 @@
-using Application.Contracts;
 using Application.DTOs.Quotation;
+using Application.Services.Excel;
 using ClosedXML.Excel;
 
 namespace Application.UseCases.Quotation
 {
     public class ValidateQuotationExcel
     {
-        private readonly IQuotationExcelValidator _validator;
-
-        public ValidateQuotationExcel(IQuotationExcelValidator validator)
-        {
-            _validator = validator;
-        }
-
-        public QuotationExcelValidationResponseDto Execute(Stream excelStream)
+        public QuotationExcelValidationResponseDto Execute(Stream excelStream, string? fileName = null)
         {
             try
             {
                 if (excelStream.CanSeek)
                     excelStream.Position = 0;
 
-                using var workbook = new XLWorkbook(excelStream);
-                return _validator.Validate(workbook);
+                var formulaErrors = ExcelFormulaErrorScanner.Scan(excelStream);
+                if (formulaErrors.Count > 0)
+                {
+                    return new QuotationExcelValidationResponseDto
+                    {
+                        IsValid = false,
+                        Errors = formulaErrors
+                    };
+                }
+
+                if (excelStream.CanSeek)
+                    excelStream.Position = 0;
+
+                using var sanitized = ExcelSanitizer.SanitizeBrokenRefs(excelStream);
+                using var workbook = new XLWorkbook(sanitized);
+
+                return new QuotationExcelValidationResponseDto
+                {
+                    IsValid = true
+                };
             }
             catch (Exception ex)
             {

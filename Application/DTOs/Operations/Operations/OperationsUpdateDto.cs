@@ -1,5 +1,7 @@
-﻿namespace Application.DTOs.Operations.Operations
-{
+using Microsoft.AspNetCore.Http;
+
+namespace Application.DTOs.Operations.Operations
+{ 
     public class OperationsUpdateDto
     {
         public long OperationsId { get; set; }
@@ -13,5 +15,6 @@
         public DateTime? ActualEndDate { get; set; }
         public int? OperationsStatusId { get; set; }
         public string? Status { get; set; }
+        public IFormFile? ClosurePdfFile { get; set; }
     }
 }

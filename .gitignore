@@ -37,6 +37,7 @@ publish/
 
 # Archivos locales de agentes
 AGENTS.md
+CLAUDE.md
 agents/
 
 # Base de datos local
@@ -48,7 +49,6 @@ agents/
 *.log
 *.cache
 *.lscache
-
 # Sistema operativo
 .DS_Store
 Thumbs.db
@@ -59,3 +59,8 @@ appsettings.json
 appsettings.*.json
 !appsettings.example.json
 !appsettings.*.example.json
+/.agents/*
+/skills-lock.json
+/sql_scripts
+/docs
+*.md

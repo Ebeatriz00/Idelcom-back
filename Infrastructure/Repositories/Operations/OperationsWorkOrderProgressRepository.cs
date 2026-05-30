@@ -75,7 +75,7 @@ namespace Infrastructure.Repositories.Operations
                     .WithOutputInt("@COutput")
                     .WithOutputString("@SOutput", 500);
 
-                await _dapperHelper.ExecuteAsync("SP_WS_INSERT_WORK_ORDER_PROGRESS_V2", parameters);
+                await _dapperHelper.ExecuteAsync("SP_WS_INSERT_WORK_ORDER_PROGRESS", parameters);
 
                 var cOutput = parameters.Get<int>("@COutput");
                 var sOutput = parameters.Get<string>("@SOutput");

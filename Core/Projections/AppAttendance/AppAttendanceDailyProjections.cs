@@ -1,16 +1,23 @@
-﻿namespace Core.Projections.AppAttendance
+namespace Core.Projections.AppAttendance
 {
     public class AppAttendanceOperationProjection
     {
         public long BusinessId { get; set; }
         public long OperationsId { get; set; }
         public string OperationsDesc { get; set; } = string.Empty;
+    }
+
+    public class AppAttendanceProjectConfigProjection
+    {
+        public long OperationsProjectConfigId { get; set; }
+        public long OperationsId { get; set; }
         public TimeSpan EntryTime { get; set; }
         public TimeSpan DepartureTime { get; set; }
         public bool AllowDelay { get; set; }
         public int MinutesTolerance { get; set; }
         public TimeSpan BeforeOfficialTime { get; set; }
         public bool IsRequirePhoto { get; set; }
+        public int Shift { get; set; }
     }
 
     public class AppAttendanceWorkOrderProjection
@@ -22,7 +29,7 @@
         public string WorkOrderName { get; set; } = string.Empty;
         public int OrderStatusId { get; set; }
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public string Location { get; set; } = string.Empty;
         public bool NeedAttendance { get; set; }
         public decimal ProgressPercentage { get; set; }
@@ -36,6 +43,7 @@
         public long SquadId { get; set; }
         public long WorkOrderId { get; set; }
         public long OperationsId { get; set; }
+        public long? OperationsProjectConfigId { get; set; }
         public string SquadName { get; set; } = string.Empty;
         public long TechLeaderId { get; set; }
         public string Description { get; set; } = string.Empty;
@@ -119,6 +127,7 @@
     public class AppAttendanceDailyResult
     {
         public IEnumerable<AppAttendanceOperationProjection> Operations { get; set; } = [];
+        public IEnumerable<AppAttendanceProjectConfigProjection> Configs { get; set; } = [];
         public IEnumerable<AppAttendanceWorkOrderProjection> WorkOrders { get; set; } = [];
         public IEnumerable<AppAttendanceSquadProjection> Squads { get; set; } = [];
         public IEnumerable<AppAttendanceWorkerProjection> Workers { get; set; } = [];

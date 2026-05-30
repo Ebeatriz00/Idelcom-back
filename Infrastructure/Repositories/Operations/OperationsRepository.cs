@@ -1,4 +1,4 @@
-﻿using Core.Entities.Operations;
+using Core.Entities.Operations;
 using Core.Entities.paginations;
 using Core.Interfaces.Operations;
 using Core.Projections.Operations;
@@ -110,6 +110,7 @@ namespace Infrastructure.Repositories.Operations
                     entity.PlannedEndDate,
                     entity.ActualEndDate,
                     entity.OperationsStatusId,
+                    entity.ClosurePdfFileUid,
                     UpdateUser = userId
                 })
                 .WithOutputInt("@COutput")
