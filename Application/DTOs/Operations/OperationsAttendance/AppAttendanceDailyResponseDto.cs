@@ -79,7 +79,7 @@ namespace Application.DTOs.Operations.OperationsAttendance
         public long WorkerId { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Document { get; set; } = string.Empty;
-        public int JobTitleId { get; set; }
+        public long JobTitleId { get; set; }
         public string JobTitleDesc { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public string? Email { get; set; }

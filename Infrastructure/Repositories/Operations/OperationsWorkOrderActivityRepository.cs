@@ -112,8 +112,11 @@ namespace Infrastructure.Repositories.Operations
                 Total = total
             };
         }
-           
-        public async Task<IEnumerable<AppActivityWorkOrderProjection>> GetAppActivitiesByResponsibleAsync(long userId, long businessId)
+
+        public async Task<(IEnumerable<AppOperationProjection> Operations,
+                          IEnumerable<AppWorkOrderProjection> WorkOrders,
+                          IEnumerable<AppRootActivityProjection> RootActivities,
+                          IEnumerable<AppSubActivityProjection> SubActivities)> GetAppActivitiesByResponsibleAsync(long userId, long businessId)
         {
             var parameters = DapperParams.From(new
             {
@@ -121,7 +124,18 @@ namespace Infrastructure.Repositories.Operations
                 BusinessId = businessId
             });
 
-            return await _dapperHelper.QueryAsync<AppActivityWorkOrderProjection>("SP_WS_APP_GET_ACTIVITIES_BY_RESPONSIBLE", parameters);
+            return await _dapperHelper.QueryMultipleAsync(
+                "SP_WS_APP_GET_ACTIVITIES_BY_RESPONSIBLE",
+                async reader =>
+                {
+                    var operations = await reader.ReadAsync<AppOperationProjection>();
+                    var workOrders = await reader.ReadAsync<AppWorkOrderProjection>();
+                    var rootActivities = await reader.ReadAsync<AppRootActivityProjection>();
+                    var subActivities = await reader.ReadAsync<AppSubActivityProjection>();
+
+                    return (operations, workOrders, rootActivities, subActivities);
+                },
+                parameters);
         }
 
         public async Task<BaseResponse> UpdateAsync(OperationWorkOrderActivity entity, long userId, long businessId, IDbTransaction transaction)
@@ -216,7 +230,7 @@ namespace Infrastructure.Repositories.Operations
             });
 
             var result = await _dapperHelper.QueryAsync<OperationsWorkOrderActivitySelectItem>("SP_WS_SELECT_WORK_ORDER_ACTIVITY", parameters);
-            
+
             return new PagedSelect<OperationsWorkOrderActivitySelectItem?>
             {
                 Items = result.ToList(),
