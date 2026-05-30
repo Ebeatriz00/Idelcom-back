@@ -14,13 +14,25 @@ namespace Idelcom.Controllers.Operations
         UpdateOperationsWorkOrderActivity updateUseCase,
         GetAllOperationsWorkOrderActivity getAllUseCase,
         GetSelectOperationsWorkOrderActivity getSelectUseCase,
-        DeleteOperationsWorkOrderActivity deleteUseCase) : BaseController
+        DeleteOperationsWorkOrderActivity deleteUseCase,
+        CloneOperationsWorkOrderActivity cloneUseCase) : BaseController
     {
         private readonly CreateOperationsWorkOrderActivity _createUseCase = createUseCase;
         private readonly UpdateOperationsWorkOrderActivity _updateUseCase = updateUseCase;
         private readonly GetAllOperationsWorkOrderActivity _getAllUseCase = getAllUseCase;
         private readonly GetSelectOperationsWorkOrderActivity _getSelectUseCase = getSelectUseCase;
         private readonly DeleteOperationsWorkOrderActivity _deleteUseCase = deleteUseCase;
+        private readonly CloneOperationsWorkOrderActivity _cloneUseCase = cloneUseCase;
+
+        [HttpPost]
+        public async Task<IActionResult> Clone([FromBody] OperationsWorkOrderActivityCloneDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var businessId = GetCurrentBusinessId();
+
+            var result = await _cloneUseCase.ExecuteAsync(dto, userId, businessId);
+            return Ok(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OperationsWorkOrderActivityCreateDto dto)
@@ -43,12 +55,12 @@ namespace Idelcom.Controllers.Operations
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromQuery] long activityId)
+        public async Task<IActionResult> Delete([FromBody] List<long> activityIds)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();
 
-            var result = await _deleteUseCase.ExecuteAsync(activityId, businessId, userId);
+            var result = await _deleteUseCase.ExecuteAsync(activityIds, businessId, userId);
             return Ok(result);
         }
 

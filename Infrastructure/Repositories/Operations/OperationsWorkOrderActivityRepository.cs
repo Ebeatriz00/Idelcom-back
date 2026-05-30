@@ -138,6 +138,19 @@ namespace Infrastructure.Repositories.Operations
                 parameters);
         }
 
+        public async Task<IEnumerable<OperationWorkOrderActivity>> GetSubActivitiesAsync(long parentId, long businessId)
+        {
+            var parameters = DapperParams.From(new
+            {
+                ParentActivityId = parentId,
+                BusinessId = businessId
+            });
+
+            return await _dapperHelper.QueryAsync<OperationWorkOrderActivity>(
+                "SP_WS_GET_SUBACTIVITIES",
+                parameters);
+        }
+
         public async Task<BaseResponse> UpdateAsync(OperationWorkOrderActivity entity, long userId, long businessId, IDbTransaction transaction)
         {
             try
