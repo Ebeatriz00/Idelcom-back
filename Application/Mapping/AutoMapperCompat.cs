@@ -154,6 +154,10 @@ internal sealed class RuntimeMapper : IMapper
 
     public TDestination Map<TDestination>(object source)
     {
+        if (source is null)
+        {
+            return default!;
+        }
         return (TDestination)Map(source, source.GetType(), typeof(TDestination))!;
     }
 

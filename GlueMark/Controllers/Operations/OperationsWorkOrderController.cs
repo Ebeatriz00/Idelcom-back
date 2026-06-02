@@ -15,7 +15,8 @@ namespace Idelcom.Controllers.Operations
         DeleteOperationsWorkOrder deleteOperationsWorkOrder,
         GetAllOperationsWorkOrder getAllOperationsWorkOrder,
         GetByIdOperationsWorkOrder getByIdOperationsWorkOrder,
-        GetOperationsWorkOrderProgressReport getOperationsWorkOrderProgressReport
+        GetOperationsWorkOrderProgressReport getOperationsWorkOrderProgressReport,
+        GetSelectOperationsWorkOrder getSelectOperationsWorkOrder
         ) : BaseController
     {
         private readonly CreateOperationsWorkOrder _createOperationsWorkOrder = createOperationsWorkOrder;
@@ -24,6 +25,7 @@ namespace Idelcom.Controllers.Operations
         private readonly GetAllOperationsWorkOrder _getAllOperationsWorkOrder = getAllOperationsWorkOrder;
         private readonly GetByIdOperationsWorkOrder _getByIdOperationsWorkOrder = getByIdOperationsWorkOrder;
         private readonly GetOperationsWorkOrderProgressReport _getOperationsWorkOrderProgressReport = getOperationsWorkOrderProgressReport;
+        private readonly GetSelectOperationsWorkOrder _getSelectOperationsWorkOrder = getSelectOperationsWorkOrder;
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OperationsWorkOrderCreateDto dto)
@@ -80,6 +82,18 @@ namespace Idelcom.Controllers.Operations
             var businessId = GetCurrentBusinessId();
 
             var result = await _getOperationsWorkOrderProgressReport.ExecuteAsync(businessId, operationsId);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSelect(
+            [FromQuery] long operationsId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null)
+        {
+            var businessId = GetCurrentBusinessId();
+            var result = await _getSelectOperationsWorkOrder.ExecuteAsync(businessId, operationsId, page, pageSize, search);
             return Ok(result);
         }
     }

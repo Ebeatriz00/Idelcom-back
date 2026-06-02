@@ -15,5 +15,6 @@ namespace Core.Interfaces.Operations
         Task<BaseResponse> UpdateAsync(OperationWorkOrder entity, IDbTransaction transaction);
         Task<BaseResponse> DeleteAsync(long workOrderId, long businessId, long userId, IDbTransaction transaction);
         Task<(IEnumerable<OperationsWorkOrderSummaryProjection> Summaries, IEnumerable<OperationsWorkOrderProgressDetailProjection> Details)> GetProgressReportAsync(long businessId, long operationsId);
+        Task<PagedSelect<OperationsWorkOrderSelectItem?>> GetForSelectAsync(long businessId, long operationsId, int page, int pageSize, string? search);
     }
 }
