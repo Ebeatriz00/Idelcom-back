@@ -28,7 +28,7 @@ namespace GlueMark.Middleware
                 _logger.LogWarning(ex,
                     "Excepción de dominio [{Code}] en {Method} {Path}",
                     ex.ErrorCode, context.Request.Method, context.Request.Path);
-
+                 
                 await HandleBaseExceptionAsync(context, ex, "application");
             }
             catch (Infrastructure.Exceptions.BaseException ex)

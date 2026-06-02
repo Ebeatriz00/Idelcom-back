@@ -33,5 +33,11 @@ namespace Core.Entities.Operations
 
         [AuditField("Observaciones")]
         public string? Observations { get; set; }
+
+        public long WorkOrderId { get; set; }
+        public string? WorkOrderCode { get; set; }
+        public long? SubActivityId { get; set; }
+        public string? SubActivityName { get; set; }
+        public string? MeasurementUnitSymbol { get; set; }
     }
 }

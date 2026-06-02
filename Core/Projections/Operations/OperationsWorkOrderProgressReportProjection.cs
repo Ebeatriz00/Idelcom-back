@@ -26,5 +26,10 @@ namespace Core.Projections.Operations
         public decimal? CurrentQuantity { get; set; }
         public string? MeasurementUnitSymbol { get; set; }
         public decimal? ActivityProgressPercentage { get; set; }
+        
+        public long WorkOrderId { get; set; }
+        public string? WorkOrderCode { get; set; }
+        public long? SubActivityId { get; set; }
+        public string? SubActivityName { get; set; }
     }
 }

@@ -219,6 +219,27 @@ namespace Infrastructure.Repositories.Operations
                 commandType: CommandType.StoredProcedure
             );
         }
+        public async Task<PagedSelect<OperationsWorkOrderSelectItem?>> GetForSelectAsync(long businessId, long operationsId, int page, int pageSize, string? search)
+        {
+            var parameters = DapperParams.From(new
+            {
+                BusinessId = businessId,
+                OperationsId = operationsId,
+                PageNumber = page,
+                PageSize = pageSize,
+                Search = search
+            });
+
+            var (item, total) = await _dapperHelper.QueryPagedAsync<OperationsWorkOrderSelectItem>("SP_WS_SELECT_OPERATIONS_WORK_ORDER", parameters);
+
+            return new PagedSelect<OperationsWorkOrderSelectItem?>
+            {
+                Items = item.ToList()!,
+                Page = page,
+                PageSize = pageSize,
+                HasMore = false
+            };
+        }
 
     }
 }
