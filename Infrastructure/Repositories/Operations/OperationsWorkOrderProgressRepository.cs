@@ -102,6 +102,51 @@ namespace Infrastructure.Repositories.Operations
             }
         }
 
+        public async Task<BaseResponseId> UpdateAsync(OperationWorkOrderProgress entity, long userId, long businessId, string? appRecordId)
+        {
+            try
+            {
+                var parameters = DapperParams.From(new
+                {
+                    entity.ProgressId,
+                    BusinessId = businessId,
+                    entity.ReportedQuantity,
+                    entity.ReportedDate,
+                    WorkerId = entity.WorkerId ?? userId,
+                    entity.Observations,
+                    UpdateUser = userId,
+                    AppRecordId = appRecordId
+                })
+                    .WithOutputLong("@NewProgressId")
+                    .WithOutputInt("@COutput")
+                    .WithOutputString("@SOutput", 500);
+
+                await _dapperHelper.ExecuteAsync("SP_WS_UPDATE_WORK_ORDER_PROGRESS", parameters);
+
+                var cOutput = parameters.Get<int>("@COutput");
+                var sOutput = parameters.Get<string>("@SOutput");
+                var newProgressId = parameters.Get<long>("@NewProgressId");
+
+                if (cOutput != 1)
+                    throw new BusinessException(sOutput);
+
+                return new BaseResponseId
+                {
+                    Status = cOutput,
+                    Message = sOutput,
+                    Id = newProgressId
+                };
+            }
+            catch (BaseException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseException("Error inesperado en la actualización de avance de la orden de trabajo.", ex.Message);
+            }
+        }
+
         public async Task<PagedResult<OperationWorkOrderProgress>> GetAllAsync(
             long businessId,
             string? search,
