@@ -14,11 +14,13 @@ namespace DependencyInjection.Dependency.Modules.Operations
         {
             services.AddScoped<CreateAppOperationsWorkOrderProgress>();
             services.AddScoped<SyncAppOperationsWorkOrderProgress>();
+            services.AddScoped<UpdateAppOperationsWorkOrderProgress>();
             services.AddScoped<GetOperationsWorkOrderProgressList>();
             services.AddScoped<GetAppOperationsWorkOrderProgressPhotos>();
 
             services.AddTransient<IValidator<OperationsWorkOrderProgressCreateDto>, OperationsWorkOrderProgressCreateValidator>();
             services.AddTransient<IValidator<OperationsWorkOrderProgressSyncDto>, OperationsWorkOrderProgressSyncValidator>();
+            services.AddTransient<IValidator<OperationsWorkOrderProgressUpdateDto>, OperationsWorkOrderProgressUpdateValidator>();
 
             services.AddScoped<IOperationsWorkOrderProgressRepository, OperationsWorkOrderProgressRepository>();
             services.AddScoped<IOperationsWorkOrderProgressPhotoRepository, OperationsWorkOrderProgressPhotoRepository>();
