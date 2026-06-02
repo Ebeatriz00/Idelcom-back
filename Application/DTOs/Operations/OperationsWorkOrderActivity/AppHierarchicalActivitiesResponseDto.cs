@@ -19,6 +19,7 @@ namespace Application.DTOs.Operations.OperationsWorkOrderActivity
         public long WorkOrderId { get; set; }
         public string? WorkOrderName { get; set; }
         public decimal? WorkOrderProgress { get; set; }
+        public string? WorkOrderCode { get; set; }
         public List<AppActivityDetailResponseDto> Activities { get; set; } = [];
     }
 

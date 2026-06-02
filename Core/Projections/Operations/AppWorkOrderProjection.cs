@@ -6,5 +6,6 @@ namespace Core.Projections.Operations
         public long OperationId { get; set; }
         public string? WorkOrderName { get; set; }
         public decimal? WorkOrderProgress { get; set; }
+        public string? WorkOrderCode { get; set; }
     }
 }
