@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,7 +49,8 @@ namespace Core.Projections.Ssoma
         public string ValidationStatus { get; set; } = null!;
         public string FileExpiration { get; set; } = null!;
         public string FileReview { get; set; } = null!;
-        public string FileUrl { get; set; } = null!;
+        public string? FileUrl { get; set; }
+        public Guid? FileUid { get; set; }
 
     }
     public class SsomaPersonnelHomologationOperationsItem
@@ -63,7 +64,8 @@ namespace Core.Projections.Ssoma
         public string ValidationStatus { get; set; } = null!;
         public string FileExpiration { get; set; } = null!;
         public string FileReview { get; set; } = null!;
-        public string FileUrl { get; set; } = null!;
+        public string? FileUrl { get; set; }
+        public Guid? FileUid { get; set; }
 
     }
 

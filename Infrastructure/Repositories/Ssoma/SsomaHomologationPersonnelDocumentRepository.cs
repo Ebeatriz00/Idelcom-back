@@ -24,6 +24,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.FileName,
                     entity.FileUrl,
                     entity.FilePath,
+                    entity.FileUid,
                     entity.IssueDate,
                     entity.ExpirationDate,
                     entity.ValidationStatusId,
@@ -209,7 +210,7 @@ namespace Infrastructure.Repositories.Ssoma
                 CommandType.Text);
         }
 
-        public async Task<BaseResponse> UpdateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction)
+        public async Task<BaseResponseId> UpdateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction)
         {
             try
             {
@@ -222,6 +223,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.FileName,
                     entity.FileUrl,
                     entity.FilePath,
+                    entity.FileUid,
                     entity.IssueDate,
                     entity.ExpirationDate,
                     entity.ValidationStatusId,
@@ -232,30 +234,26 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.ReplacementReason,
                     entity.UpdateUser
                 })
+                .WithOutputLong("@Id")
                 .WithOutputInt("@COutput")
                 .WithOutputString("@SOutput", 500);
 
                 await _dapperHelper.ExecuteAsync("SP_WS_UPDATE_SSOMA_HOMOLOGATION_PERSONNEL_DOCUMENT", parameters, transaction);
 
+                var id = parameters.Get<long?>("@Id");
                 var cOutput = parameters.Get<int>("@COutput");
                 var sOutput = parameters.Get<string>("@SOutput");
 
-                if (cOutput != 1)
-                    throw new BusinessException(sOutput);
-
-                return new BaseResponse
+                return new BaseResponseId
                 {
+                    Id = id,
                     Status = cOutput,
                     Message = sOutput
                 };
             }
-            catch (BaseException)
-            {
-                throw;
-            }
             catch (Exception ex)
             {
-                throw new DatabaseException("Error inesperado al actualizar el documento.", ex.Message);
+                throw new DatabaseException("Error de base de datos al actualizar el documento de homologación de personal SSOMA.", ex.Message);
             }
         }
 
