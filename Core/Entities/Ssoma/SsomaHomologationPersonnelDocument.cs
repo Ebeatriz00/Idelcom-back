@@ -18,13 +18,16 @@ namespace Core.Entities.Ssoma
         public int RequirementId { get; set; }
 
         [AuditField("Nombre de archivo")]
-        public string FileName { get; set; } = null!;
+        public string? FileName { get; set; }
 
         [AuditField("URL del archivo")]
-        public string FileUrl { get; set; } = null!;
+        public string? FileUrl { get; set; }
 
         [AuditField("Ruta del archivo")]
-        public string FilePath { get; set; } = null!;
+        public string? FilePath { get; set; }
+
+        [AuditField("ID del archivo de almacenamiento")]
+        public Guid? FileUid { get; set; }
 
         [AuditField("Fecha de emisión")]
         public DateTime? IssueDate { get; set; }

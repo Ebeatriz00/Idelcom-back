@@ -59,7 +59,7 @@ namespace Idelcom.Controllers.Ssoma
 
         [HttpPost]
         [Route("CreateSsomaHomologationPersonnelDocument")]
-        public async Task<IActionResult> Create([FromBody] SsomaHomologationPersonnelDocumentCreateDto dto)
+        public async Task<IActionResult> Create([FromForm] SsomaHomologationPersonnelDocumentCreateDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();
@@ -69,7 +69,7 @@ namespace Idelcom.Controllers.Ssoma
 
         [HttpPut]
         [Route("UpdateSsomaHomologationPersonnelDocument")]
-        public async Task<IActionResult> Update([FromBody] SsomaHomologationPersonnelDocumentUpdateDto dto)
+        public async Task<IActionResult> Update([FromForm] SsomaHomologationPersonnelDocumentUpdateDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();
@@ -79,7 +79,7 @@ namespace Idelcom.Controllers.Ssoma
 
         [HttpPut]
         [Route("ReplaceSsomaHomologationPersonnelDocument")]
-        public async Task<IActionResult> Replace([FromBody] SsomaHomologationPersonnelDocumentReplaceRequestDto dto)
+        public async Task<IActionResult> Replace([FromForm] SsomaHomologationPersonnelDocumentReplaceRequestDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();

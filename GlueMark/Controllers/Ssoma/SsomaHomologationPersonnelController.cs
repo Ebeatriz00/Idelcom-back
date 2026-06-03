@@ -79,7 +79,7 @@ namespace Idelcom.Controllers.Ssoma
 
         [HttpPost]
         [Route("CreateSsomaHomologationPersonnel")]
-        public async Task<IActionResult> Create([FromBody] SsomaHomologationPersonnelCreateDto dto)
+        public async Task<IActionResult> Create([FromForm] SsomaHomologationPersonnelCreateDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();
@@ -89,7 +89,7 @@ namespace Idelcom.Controllers.Ssoma
 
         [HttpPost]
         [Route("CreateSsomaHomologationPersonnelOrchestrated")]
-        public async Task<IActionResult> CreateOrchestrated([FromBody] SsomaHomologationPersonnelCreateOrchestratedDto dto)
+        public async Task<IActionResult> CreateOrchestrated([FromForm] SsomaHomologationPersonnelCreateOrchestratedDto dto)
         {
             var userId = GetCurrentUserId();
             var businessId = GetCurrentBusinessId();

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System.Text.Json.Serialization;
 
 namespace Application.DTOs.SsomaHomologationPersonnelDocument
@@ -7,14 +8,15 @@ namespace Application.DTOs.SsomaHomologationPersonnelDocument
         public long SsomaHomologationPersonnelDocumentId { get; set; }
         public long HomologationPersonnelId { get; set; }
         public int RequirementId { get; set; }
-        public string FileName { get; set; } = null!;
-        public string FileUrl { get; set; } = null!;
-        public string FilePath { get; set; } = null!;
+        public IFormFile? File { get; set; }
+        public string? FileName { get; set; }
+        public string? FileUrl { get; set; }
+        public string? FilePath { get; set; }
         public DateTime? IssueDate { get; set; }
         public DateTime? ExpirationDate { get; set; }
         public int ValidationStatusId { get; set; }
         public DateTime? ReviewDate { get; set; }
-        public string Observation { get; set; } = null!;
+        public string? Observation { get; set; }
         [JsonIgnore]
         public long? ReplacedDocumentId { get; set; }
         [JsonIgnore]

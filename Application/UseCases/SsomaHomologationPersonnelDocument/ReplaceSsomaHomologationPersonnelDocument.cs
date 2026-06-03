@@ -18,7 +18,8 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         IAuditLogFactory auditLogFactory,
         ISqlConnectionFactory sqlConnectionFactory,
         IValidator<SsomaHomologationPersonnelDocumentCreateDto> validator,
-        SsomaHomologationPersonnelDocumentBusinessRules businessRules)
+        SsomaHomologationPersonnelDocumentBusinessRules businessRules,
+        Core.Interfaces.IStorageService storageService)
     {
         private readonly ISsomaHomologationPersonnelDocumentRepository _repository = repository;
         private readonly IAuditService _auditService = auditService;
@@ -26,6 +27,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         private readonly ISqlConnectionFactory _sqlConnectionFactory = sqlConnectionFactory;
         private readonly IValidator<SsomaHomologationPersonnelDocumentCreateDto> _validator = validator;
         private readonly SsomaHomologationPersonnelDocumentBusinessRules _businessRules = businessRules;
+        private readonly Core.Interfaces.IStorageService _storageService = storageService;
         private const int ValidationStatusValid = 2;
 
         public async Task<BaseResponseId> ExecuteAsync(SsomaHomologationPersonnelDocumentReplaceDto dto, long userId, long businessId)
@@ -148,6 +150,20 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 out var normalizedReviewDate,
                 out var normalizedObservation);
 
+            Guid? fileUid = null;
+            if (dto.File != null && dto.File.Length > 0)
+            {
+                using var stream = dto.File.OpenReadStream();
+                fileUid = await _storageService.UploadAsync(
+                    stream,
+                    dto.File.FileName,
+                    $"SSOMA/HomologacionPersonal/{dto.HomologationPersonnelId}/Requisito/{dto.RequirementId}",
+                    userId);
+                normalizedFileName = dto.File.FileName;
+                normalizedFileUrl = null;
+                normalizedFilePath = null;
+            }
+
             var replacementReason = dto.ReplacementReason?.Trim();
             if (replacementReason?.Length > 1000)
                 throw new BusinessException("El motivo del reemplazo no puede exceder 1000 caracteres.");
@@ -159,6 +175,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 FileName = normalizedFileName,
                 FileUrl = normalizedFileUrl,
                 FilePath = normalizedFilePath,
+                File = dto.File,
                 IssueDate = normalizedIssueDate,
                 ExpirationDate = normalizedExpirationDate,
                 ValidationStatusId = ValidationStatusValid,
@@ -202,6 +219,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 FileName = createDto.FileName,
                 FileUrl = createDto.FileUrl,
                 FilePath = createDto.FilePath,
+                FileUid = fileUid,
                 IssueDate = createDto.IssueDate,
                 ExpirationDate = createDto.ExpirationDate,
                 ValidationStatusId = createDto.ValidationStatusId,
@@ -264,6 +282,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 FileName = source.FileName,
                 FileUrl = source.FileUrl,
                 FilePath = source.FilePath,
+                FileUid = source.FileUid,
                 IssueDate = source.IssueDate,
                 ExpirationDate = source.ExpirationDate,
                 ValidationStatusId = source.ValidationStatusId,
