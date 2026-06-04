@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.ProfilesPermissions;
 using Application.Exceptions;
+using Application.Services.InterfacesServices;
 using AutoMapper;
 using Core.Interfaces;
 using FluentValidation;
@@ -15,18 +16,21 @@ namespace Application.UseCases.ProfilesPermissions
 {
     public class CreateProfilesPermissions
     {
-       private readonly IProfilesPermissionsRepository _repository;
+        private readonly IProfilesPermissionsRepository _repository;
         private readonly IValidator<ProfilesPermissionsCreateDto> _validator;
         private readonly IMapper _mapper;
+        private readonly IAuthPermissionService _authPermissionService;
 
         public CreateProfilesPermissions(
             IProfilesPermissionsRepository repository,
             IValidator<ProfilesPermissionsCreateDto> validator,
-            IMapper mapper)
+            IMapper mapper,
+            IAuthPermissionService authPermissionService)
         {
             _repository = repository;
             _validator = validator;
             _mapper = mapper;
+            _authPermissionService = authPermissionService;
         }
 
         public async Task<GlobalResponse> ExecuteAsync(ProfilesPermissionsCreateDto dto)
@@ -59,6 +63,7 @@ namespace Application.UseCases.ProfilesPermissions
             }
 
             await _repository.AddAsync(entities);
+            _authPermissionService.Invalidate(dto.ProfilesId, dto.BusinessId);
 
             return new GlobalResponse
             {

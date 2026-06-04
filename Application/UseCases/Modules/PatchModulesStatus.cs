@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Modules;
+using Application.DTOs.Modules;
+using Application.Services.InterfacesServices;
 using Core.Interfaces;
 using FluentValidation;
 using SharedKernel;
@@ -14,12 +15,20 @@ namespace Application.UseCases.Modules
     public class PatchModulesStatus
     {
         private readonly IModulesRepository _repository;
+        private readonly IProfilesPermissionsRepository _profilesPermissionsRepository;
         private readonly IValidator<ModulesStatusToogleDto> _validator;
+        private readonly IAuthPermissionService _authPermissionService;
 
-        public PatchModulesStatus(IModulesRepository repository, IValidator<ModulesStatusToogleDto> validator)
+        public PatchModulesStatus(
+            IModulesRepository repository,
+            IProfilesPermissionsRepository profilesPermissionsRepository,
+            IValidator<ModulesStatusToogleDto> validator,
+            IAuthPermissionService authPermissionService)
         {
             _repository = repository;
+            _profilesPermissionsRepository = profilesPermissionsRepository;
             _validator = validator;
+            _authPermissionService = authPermissionService;
         }
 
         public async Task<GlobalResponse> ExecuteAsync(ModulesStatusToogleDto dto)
@@ -33,7 +42,14 @@ namespace Application.UseCases.Modules
                 throw new AppValidationException(errores);
             }
 
+            var affectedProfiles = await _profilesPermissionsRepository
+                .GetAffectedProfileIdsByModuleAsync(dto.ModulesId, dto.BusinessId);
             var updated = await _repository.PatchStatusAsync(dto.ModulesId, dto.Status, dto.UsersBy, dto.BusinessId);
+            if (updated)
+            {
+                foreach (var profilesId in affectedProfiles)
+                    _authPermissionService.Invalidate(profilesId, dto.BusinessId);
+            }
 
             return new GlobalResponse
             {

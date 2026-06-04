@@ -13,7 +13,10 @@ namespace Core.Interfaces
         Task<bool> ExistsAsync(long profilesId, long modulesPermissionsId, long businessId,  long? excludeId = null);
         Task AddAsync(IEnumerable<ProfilesPermissions> entity);
         Task<PagedResult<ProfilesPermissions>> GetAllAsync(long profilesId, long businessId, int page, int pageSize,  string? search = null);
-        Task<ProfilesPermissions> GetByIdAsync(long ProfilesPermissionsId);
+        Task<ProfilesPermissions?> GetByIdAsync(long ProfilesPermissionsId);
+        Task<IReadOnlyList<long>> GetAffectedProfileIdsByModulesPermissionAsync(long modulesPermissionsId, long businessId);
+        Task<IReadOnlyList<long>> GetAffectedProfileIdsByPermissionAsync(long permissionsId, long businessId);
+        Task<IReadOnlyList<long>> GetAffectedProfileIdsByModuleAsync(long modulesId, long businessId);
         Task<bool> UpdateAsync(ProfilesPermissions profilesPermissions);
         Task<bool> PatchStatusAsync(long ProfilesPermissionsId, string status, long UsersBy, long businessId);
     }
