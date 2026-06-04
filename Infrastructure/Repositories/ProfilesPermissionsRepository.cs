@@ -162,13 +162,94 @@ namespace Infrastructure.Repositories
                         };
                     }
                 }
-                return null;
+                return result;
             }
             catch (SqlException ex)
             {
                 throw new DatabaseException("Error al obtener permisos del perfil.", ex.Message);
             }
         }
+
+        public Task<IReadOnlyList<long>> GetAffectedProfileIdsByModulesPermissionAsync(long modulesPermissionsId, long businessId)
+        {
+            const string sql = @"
+                SELECT DISTINCT PROFILES_ID
+                FROM PROFILES_PERMISSIONS WITH (READPAST)
+                WHERE MODULES_PERMISSIONS_ID = @MODULES_PERMISSIONS_ID
+                  AND BUSINESS_ID = @BUSINESS_ID;";
+
+            return GetAffectedProfileIdsAsync(sql, cmd =>
+            {
+                cmd.Parameters.Add("@MODULES_PERMISSIONS_ID", SqlDbType.BigInt).Value = modulesPermissionsId;
+                cmd.Parameters.Add("@BUSINESS_ID", SqlDbType.BigInt).Value = businessId;
+            });
+        }
+
+        public Task<IReadOnlyList<long>> GetAffectedProfileIdsByPermissionAsync(long permissionsId, long businessId)
+        {
+            const string sql = @"
+                SELECT DISTINCT PP.PROFILES_ID
+                FROM PROFILES_PERMISSIONS PP WITH (READPAST)
+                INNER JOIN MODULES_PERMISSIONS MP WITH (READPAST)
+                    ON MP.MODULES_PERMISSIONS_ID = PP.MODULES_PERMISSIONS_ID
+                   AND MP.BUSINESS_ID = PP.BUSINESS_ID
+                WHERE MP.PERMISSIONS_ID = @PERMISSIONS_ID
+                  AND PP.BUSINESS_ID = @BUSINESS_ID;";
+
+            return GetAffectedProfileIdsAsync(sql, cmd =>
+            {
+                cmd.Parameters.Add("@PERMISSIONS_ID", SqlDbType.BigInt).Value = permissionsId;
+                cmd.Parameters.Add("@BUSINESS_ID", SqlDbType.BigInt).Value = businessId;
+            });
+        }
+
+        public Task<IReadOnlyList<long>> GetAffectedProfileIdsByModuleAsync(long modulesId, long businessId)
+        {
+            const string sql = @"
+                SELECT DISTINCT PP.PROFILES_ID
+                FROM PROFILES_PERMISSIONS PP WITH (READPAST)
+                INNER JOIN MODULES_PERMISSIONS MP WITH (READPAST)
+                    ON MP.MODULES_PERMISSIONS_ID = PP.MODULES_PERMISSIONS_ID
+                   AND MP.BUSINESS_ID = PP.BUSINESS_ID
+                WHERE MP.MODULES_ID = @MODULES_ID
+                  AND PP.BUSINESS_ID = @BUSINESS_ID;";
+
+            return GetAffectedProfileIdsAsync(sql, cmd =>
+            {
+                cmd.Parameters.Add("@MODULES_ID", SqlDbType.BigInt).Value = modulesId;
+                cmd.Parameters.Add("@BUSINESS_ID", SqlDbType.BigInt).Value = businessId;
+            });
+        }
+
+        private async Task<IReadOnlyList<long>> GetAffectedProfileIdsAsync(string sql, Action<SqlCommand> configure)
+        {
+            try
+            {
+                var profiles = new List<long>();
+                using var cn = _connectionFactory.CreateConnection();
+                await cn.OpenAsync();
+
+                using var cmd = new SqlCommand(sql, cn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                configure(cmd);
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    profiles.Add(reader.GetInt64(0));
+                }
+
+                return profiles;
+            }
+            catch (SqlException ex)
+            {
+                throw new DatabaseException("Error al obtener perfiles afectados por cambios de permisos.", ex.Message);
+            }
+        }
+
         public async Task<bool> UpdateAsync(ProfilesPermissions profiles)
         {
             try
@@ -181,7 +262,7 @@ namespace Infrastructure.Repositories
                     CommandType = CommandType.StoredProcedure,
                     CommandTimeout = 15
                 };
-                cmd.Parameters.AddWithValue("@PROFILES_ID", profiles.ProfilesId);
+                cmd.Parameters.AddWithValue("@PROFILES_PERMISSIONS_ID", profiles.ProfilesPermissionsId);
                 cmd.Parameters.AddWithValue("@BUSINESS_ID", profiles.BusinessId);
                 cmd.Parameters.AddWithValue("@PROFILES_ID", profiles.ProfilesId);
                 cmd.Parameters.AddWithValue("@MODULES_PERMISSIONS_ID", profiles.ModulesPermissionsId);

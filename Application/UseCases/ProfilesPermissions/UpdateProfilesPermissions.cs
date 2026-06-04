@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.ProfilesPermissions;
 using Application.Exceptions;
+using Application.Services.InterfacesServices;
 using AutoMapper;
 using Core.Interfaces;
 using FluentValidation;
@@ -17,14 +18,18 @@ namespace Application.UseCases.ProfilesPermissions
         private readonly IProfilesPermissionsRepository _repository;
         private readonly IValidator<ProfilesPermissionsUpdateDto> _validator;
         private readonly IMapper _mapper;
+        private readonly IAuthPermissionService _authPermissionService;
+
         public UpdateProfilesPermissions(
             IProfilesPermissionsRepository repository,
             IValidator<ProfilesPermissionsUpdateDto> validator,
-            IMapper mapper)
+            IMapper mapper,
+            IAuthPermissionService authPermissionService)
         {
             _repository = repository;
             _validator = validator;
             _mapper = mapper;
+            _authPermissionService = authPermissionService;
         }
 
         public async Task<GlobalResponse> ExecuteAsync(ProfilesPermissionsUpdateDto dto)
@@ -38,12 +43,15 @@ namespace Application.UseCases.ProfilesPermissions
                 throw new Application.Exceptions.ValidationException(errores);
             }
 
-            if (await _repository.ExistsAsync(dto.ModulesPermissionsId, dto.BusinessId, dto.ProfilesPermissionsId))
+            if (await _repository.ExistsAsync(dto.ProfilesId, dto.ModulesPermissionsId, dto.BusinessId, dto.ProfilesPermissionsId))
             {
                 throw new DuplicateEntryException("El permiso de módulo ya existe para este negocio.");
             }
             var entity = _mapper.Map<Core.Entities.ProfilesPermissions>(dto);
             var updated = await _repository.UpdateAsync(entity);
+            if (updated)
+                _authPermissionService.Invalidate(dto.ProfilesId, dto.BusinessId);
+
             return new GlobalResponse
             {
                 Status = updated ? 1 : 0,

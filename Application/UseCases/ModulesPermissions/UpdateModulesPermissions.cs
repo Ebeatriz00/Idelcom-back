@@ -1,5 +1,6 @@
-﻿using Application.DTOs.ModulePermission;
+using Application.DTOs.ModulePermission;
 using Application.Exceptions;
+using Application.Services.InterfacesServices;
 using AutoMapper;
 using Core.Interfaces;
 using FluentValidation;
@@ -17,17 +18,23 @@ namespace Application.UseCases.ModulePermission
     public class UpdateModulesPermissions
     {
         private readonly IModulesPermissionsRepository _repository;
+        private readonly IProfilesPermissionsRepository _profilesPermissionsRepository;
         private readonly IValidator<ModulesPermissionsUpdateDto> _validator;
         private readonly IMapper _mapper;
+        private readonly IAuthPermissionService _authPermissionService;
 
         public UpdateModulesPermissions(
             IModulesPermissionsRepository repository,
+            IProfilesPermissionsRepository profilesPermissionsRepository,
             IValidator<ModulesPermissionsUpdateDto> validator,
-            IMapper mapper)
+            IMapper mapper,
+            IAuthPermissionService authPermissionService)
         {
             _repository = repository;
+            _profilesPermissionsRepository = profilesPermissionsRepository;
             _validator = validator;
             _mapper = mapper;
+            _authPermissionService = authPermissionService;
         }
 
         public async Task<GlobalResponse> ExecuteAsync(ModulesPermissionsUpdateDto dto)
@@ -42,13 +49,20 @@ namespace Application.UseCases.ModulePermission
             }
 
             // Verifica duplicados considerando ID y negocio
-            if (await _repository.ExistsAsync(dto.ModulesId,dto.PermissionsId, dto.BusinessId, dto.ModulesPermissionsId))
+            if (await _repository.ExistsAsync(dto.ModulesId, dto.PermissionsId, dto.BusinessId, dto.ModulesPermissionsId))
             {
                 throw new DuplicateEntryException("El permiso de módulo ya existe para este negocio.");
             }
 
             var entity = _mapper.Map<Core.Entities.ModulesPermissions>(dto);
+            var affectedProfiles = await _profilesPermissionsRepository
+                .GetAffectedProfileIdsByModulesPermissionAsync(dto.ModulesPermissionsId, dto.BusinessId);
             var updated = await _repository.UpdateAsync(entity);
+            if (updated)
+            {
+                foreach (var profilesId in affectedProfiles)
+                    _authPermissionService.Invalidate(profilesId, dto.BusinessId);
+            }
 
             return new GlobalResponse
             {
