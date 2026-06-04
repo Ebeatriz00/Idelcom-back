@@ -152,6 +152,7 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                 ValidTo = headerValidTo,
                 WorkerStatusId = calculatedWorkerStatusId,
                 SsomaApproved = dto.HomologationPersonnel.SsomaApproved,
+                AdminApproved = dto.HomologationPersonnel.AdminApproved,
                 Notes = dto.HomologationPersonnel.Notes
             };
 

@@ -114,30 +114,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
 
                 if (existing != null)
                 {
-                    entity.SsomaHomologationPersonnelDocumentId = existing.SsomaHomologationPersonnelDocumentId;
-                    entity.UpdateUser = userId;
-
-                    var updated = await _repository.UpdateAsync(entity, transaction);
-
-                    var after = await _repository.GetByIdAsync(existing.SsomaHomologationPersonnelDocumentId, businessId, transaction);
-                    if (after == null)
-                        throw new BusinessException("No se pudo recuperar el documento de homologacion de personal SSOMA actualizado.");
-
-                    var updateAuditLog = _auditLogFactory.Create(
-                        businessId,
-                        TableNames.SsomaHomologationPersonnelDocument,
-                        existing.SsomaHomologationPersonnelDocumentId,
-                        userId);
-
-                    await _auditService.RegisterUpdateAsync(existing, after, updateAuditLog, transaction);
-
-                    transaction.Commit();
-                    return new BaseResponseId
-                    {
-                        Status = updated.Status,
-                        Message = updated.Message,
-                        Id = existing.SsomaHomologationPersonnelDocumentId
-                    };
+                    throw new Application.Exceptions.DuplicateEntryException($"Ya existe un documento activo para este requerimiento. Si desea actualizarlo, utilice la opción de reemplazo de documentos.");
                 }
 
                 entity.CreateUser = userId;
@@ -159,6 +136,11 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 return created;
             }
             catch (BaseException)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            catch (Application.Exceptions.BaseException)
             {
                 transaction.Rollback();
                 throw;
