@@ -26,7 +26,6 @@ namespace Infrastructure.Repositories.Operations
                     entity.ComplexityId,
                     entity.TargetQuantity,
                     entity.ParentActivityId,
-                    entity.ParentActivityId,
                     CreateUser = userId
                 })
                     .WithOutputLong("@ActivityId")
@@ -114,10 +113,6 @@ namespace Infrastructure.Repositories.Operations
             };
         }
 
-        public async Task<(IEnumerable<AppOperationProjection> Operations,
-                          IEnumerable<AppWorkOrderProjection> WorkOrders,
-                          IEnumerable<AppRootActivityProjection> RootActivities,
-                          IEnumerable<AppSubActivityProjection> SubActivities)> GetAppActivitiesByResponsibleAsync(long userId, long businessId)
 
         public async Task<(IEnumerable<AppOperationProjection> Operations,
                           IEnumerable<AppWorkOrderProjection> WorkOrders,
@@ -155,18 +150,7 @@ namespace Infrastructure.Repositories.Operations
             return await _dapperHelper.QueryAsync<OperationWorkOrderActivity>(
                 "SP_WS_GET_SUBACTIVITIES",
                 parameters);
-            return await _dapperHelper.QueryMultipleAsync(
-                "SP_WS_APP_GET_ACTIVITIES_BY_RESPONSIBLE",
-                async reader =>
-                {
-                    var operations = await reader.ReadAsync<AppOperationProjection>();
-                    var workOrders = await reader.ReadAsync<AppWorkOrderProjection>();
-                    var rootActivities = await reader.ReadAsync<AppRootActivityProjection>();
-                    var subActivities = await reader.ReadAsync<AppSubActivityProjection>();
 
-                    return (operations, workOrders, rootActivities, subActivities);
-                },
-                parameters);
         }
 
         public async Task<BaseResponse> UpdateAsync(OperationWorkOrderActivity entity, long userId, long businessId, IDbTransaction transaction)
@@ -182,7 +166,6 @@ namespace Infrastructure.Repositories.Operations
                     entity.MeasurementUnitId,
                     entity.ComplexityId,
                     entity.TargetQuantity,
-                    entity.ParentActivityId,
                     entity.ParentActivityId,
                     UpdateUser = userId
                 })
