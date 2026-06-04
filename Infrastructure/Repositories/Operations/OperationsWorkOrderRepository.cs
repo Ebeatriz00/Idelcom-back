@@ -241,5 +241,26 @@ namespace Infrastructure.Repositories.Operations
             };
         }
 
+        public async Task<(IEnumerable<OperationsWorkOrderSummaryProjection> Summaries, IEnumerable<OperationsWorkOrderProgressDetailProjection> Details)> GetProgressReportAsync(long businessId, long operationsId)
+        {
+            var parameters = DapperParams.From(new
+            {
+                BUSINESS_ID = businessId,
+                OPERATIONS_ID = operationsId
+            });
+
+            return await _dapperHelper.QueryMultipleAsync(
+                "SP_WS_GET_OPERATIONS_PROGRESS_REPORT",
+                async (multi) =>
+                {
+                    var summaries = await multi.ReadAsync<OperationsWorkOrderSummaryProjection>();
+                    var details = await multi.ReadAsync<OperationsWorkOrderProgressDetailProjection>();
+                    return (summaries, details);
+                },
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
     }
 }
