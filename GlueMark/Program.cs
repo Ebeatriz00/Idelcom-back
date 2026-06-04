@@ -280,7 +280,10 @@ builder.Services.AddAuthentication(config =>
 // --- CONFIGURACIÓN DE AUTORIZACIÓN (POLÍTICAS) ---
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("TenantBound", p => p.RequireClaim("bid"))
-    .AddPolicy("RequireAppAccess", p => p.RequireClaim("source", "mobile")); // Exige que el token provenga de la App Móvil.
+    .AddPolicy("RequireAppAccess", p => p.RequireClaim("source", "mobile")) // Exige que el token provenga de la App Móvil.
+    .AddPolicy("RequireAppVersionAdmin", p => p
+        .RequireRole("SUPER ADMINISTRADOR", "ADMINISTRADOR")
+        .RequireAssertion(context => context.User.FindFirst("source")?.Value != "mobile"));
 
 // Configuración de políticas de CORS para permitir orígenes de confianza.
 var allowedOriginsSection = builder.Configuration.GetSection("AllowedOrigins");
