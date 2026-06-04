@@ -1,4 +1,4 @@
-﻿using Core.Entities.paginations;
+using Core.Entities.paginations;
 using Core.Entities.Ssoma;
 using Core.Interfaces.Ssoma;
 using Core.Projections.Ssoma;
@@ -33,6 +33,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.ValidFrom,
                     entity.ValidTo,
                     entity.SsomaApproved,
+                    entity.AdminApproved,
                     entity.Notes,
                     entity.CreateUser
                 })
@@ -179,6 +180,7 @@ namespace Infrastructure.Repositories.Ssoma
                     VALID_FROM AS ValidFrom,
                     VALID_TO AS ValidTo,
                     SSOMA_APPROVED AS SsomaApproved,
+                    ADMIN_APPROVED AS AdminApproved,
                     NOTES AS Notes,
                     CREATE_DATE AS CreateDate,
                     CREATE_USER AS CreateUser,
@@ -219,6 +221,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.ValidFrom,
                     entity.ValidTo,
                     entity.SsomaApproved,
+                    entity.AdminApproved,
                     entity.Notes,
                     entity.UpdateUser
                 })

@@ -219,6 +219,48 @@ namespace Infrastructure.Repositories.Operations
                 commandType: CommandType.StoredProcedure
             );
         }
+        public async Task<PagedSelect<OperationsWorkOrderSelectItem?>> GetForSelectAsync(long businessId, long operationsId, int page, int pageSize, string? search)
+        {
+            var parameters = DapperParams.From(new
+            {
+                BusinessId = businessId,
+                OperationsId = operationsId,
+                PageNumber = page,
+                PageSize = pageSize,
+                Search = search
+            });
+
+            var (item, total) = await _dapperHelper.QueryPagedAsync<OperationsWorkOrderSelectItem>("SP_WS_SELECT_OPERATIONS_WORK_ORDER", parameters);
+
+            return new PagedSelect<OperationsWorkOrderSelectItem?>
+            {
+                Items = item.ToList()!,
+                Page = page,
+                PageSize = pageSize,
+                HasMore = false
+            };
+        }
+
+        public async Task<(IEnumerable<OperationsWorkOrderSummaryProjection> Summaries, IEnumerable<OperationsWorkOrderProgressDetailProjection> Details)> GetProgressReportAsync(long businessId, long operationsId)
+        {
+            var parameters = DapperParams.From(new
+            {
+                BUSINESS_ID = businessId,
+                OPERATIONS_ID = operationsId
+            });
+
+            return await _dapperHelper.QueryMultipleAsync(
+                "SP_WS_GET_OPERATIONS_PROGRESS_REPORT",
+                async (multi) =>
+                {
+                    var summaries = await multi.ReadAsync<OperationsWorkOrderSummaryProjection>();
+                    var details = await multi.ReadAsync<OperationsWorkOrderProgressDetailProjection>();
+                    return (summaries, details);
+                },
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+        }
 
     }
 }

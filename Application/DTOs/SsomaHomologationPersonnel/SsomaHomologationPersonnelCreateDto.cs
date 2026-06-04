@@ -14,6 +14,7 @@ namespace Application.DTOs.SsomaHomologationPersonnel
         [JsonIgnore]
         public DateTime? ValidTo { get; set; }
         public bool SsomaApproved { get; set; }
-        public string Notes { get; set; } = null!;
+        public bool AdminApproved { get; set; }
+        public string? Notes { get; set; }
     }
 }

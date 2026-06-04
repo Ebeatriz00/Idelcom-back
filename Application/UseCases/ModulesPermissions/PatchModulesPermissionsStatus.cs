@@ -1,4 +1,5 @@
-﻿using Application.DTOs.ModulePermission;
+using Application.DTOs.ModulePermission;
+using Application.Services.InterfacesServices;
 using Core.Interfaces;
 using FluentValidation;
 using SharedKernel;
@@ -14,14 +15,20 @@ namespace Application.UseCases.ModulePermission
     public class PatchModulesPermissionsStatus
     {
         private readonly IModulesPermissionsRepository _repository;
+        private readonly IProfilesPermissionsRepository _profilesPermissionsRepository;
         private readonly IValidator<ModulesPermissionsStatusToggleDto> _validator;
+        private readonly IAuthPermissionService _authPermissionService;
 
         public PatchModulesPermissionsStatus(
             IModulesPermissionsRepository repository,
-            IValidator<ModulesPermissionsStatusToggleDto> validator)
+            IProfilesPermissionsRepository profilesPermissionsRepository,
+            IValidator<ModulesPermissionsStatusToggleDto> validator,
+            IAuthPermissionService authPermissionService)
         {
             _repository = repository;
+            _profilesPermissionsRepository = profilesPermissionsRepository;
             _validator = validator;
+            _authPermissionService = authPermissionService;
         }
 
         public async Task<GlobalResponse> ExecuteAsync(ModulesPermissionsStatusToggleDto dto)
@@ -35,12 +42,20 @@ namespace Application.UseCases.ModulePermission
                 throw new AppValidationException(errores);
             }
 
+            var affectedProfiles = await _profilesPermissionsRepository
+                .GetAffectedProfileIdsByModulesPermissionAsync(dto.ModulesPermissionsId, dto.BusinessId);
+
             var updated = await _repository.PatchStatusAsync(
                 dto.ModulesPermissionsId,
                 dto.Status,
                 dto.UsersBy,
                 dto.BusinessId
             );
+            if (updated)
+            {
+                foreach (var profilesId in affectedProfiles)
+                    _authPermissionService.Invalidate(profilesId, dto.BusinessId);
+            }
 
             return new GlobalResponse
             {

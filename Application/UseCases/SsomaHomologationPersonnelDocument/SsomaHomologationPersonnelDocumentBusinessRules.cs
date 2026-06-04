@@ -18,17 +18,17 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
             DateTime? expirationDate,
             DateTime? reviewDate,
             string? observation,
-            out string normalizedFileName,
-            out string normalizedFileUrl,
-            out string normalizedFilePath,
+            out string? normalizedFileName,
+            out string? normalizedFileUrl,
+            out string? normalizedFilePath,
             out DateTime? normalizedIssueDate,
             out DateTime? normalizedExpirationDate,
             out DateTime? normalizedReviewDate,
             out string normalizedObservation)
         {
-            normalizedFileName = fileName?.Trim() ?? string.Empty;
-            normalizedFileUrl = fileUrl?.Trim() ?? string.Empty;
-            normalizedFilePath = filePath?.Trim() ?? string.Empty;
+            normalizedFileName = string.IsNullOrWhiteSpace(fileName) ? null : fileName.Trim();
+            normalizedFileUrl = string.IsNullOrWhiteSpace(fileUrl) ? null : fileUrl.Trim();
+            normalizedFilePath = string.IsNullOrWhiteSpace(filePath) ? null : filePath.Trim();
             normalizedIssueDate = issueDate?.Date;
             normalizedExpirationDate = expirationDate?.Date;
             normalizedReviewDate = reviewDate?.Date;

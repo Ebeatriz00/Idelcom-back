@@ -19,7 +19,8 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         IMapper mapper,
         ISqlConnectionFactory sqlConnectionFactory,
         IValidator<SsomaHomologationPersonnelDocumentUpdateDto> validator,
-        SsomaHomologationPersonnelDocumentBusinessRules businessRules)
+        SsomaHomologationPersonnelDocumentBusinessRules businessRules,
+        Core.Interfaces.IStorageService storageService)
     {
         private readonly ISsomaHomologationPersonnelDocumentRepository _repository = repository;
         private readonly IAuditService _auditService = auditService;
@@ -28,8 +29,9 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         private readonly ISqlConnectionFactory _sqlConnectionFactory = sqlConnectionFactory;
         private readonly IValidator<SsomaHomologationPersonnelDocumentUpdateDto> _validator = validator;
         private readonly SsomaHomologationPersonnelDocumentBusinessRules _businessRules = businessRules;
+        private readonly Core.Interfaces.IStorageService _storageService = storageService;
 
-        public async Task<BaseResponse> ExecuteAsync(SsomaHomologationPersonnelDocumentUpdateDto dto, long userId, long businessId)
+        public async Task<BaseResponseId> ExecuteAsync(SsomaHomologationPersonnelDocumentUpdateDto dto, long userId, long businessId)
         {
             var validation = await _validator.ValidateAsync(dto);
             if (!validation.IsValid)
@@ -50,6 +52,20 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 var before = await _repository.GetByIdAsync(dto.SsomaHomologationPersonnelDocumentId, businessId);
                 if (before == null)
                     throw new BusinessException("No se encontró el documento de homologación de personal SSOMA.");
+
+                Guid? fileUid = null;
+                if (dto.File != null && dto.File.Length > 0)
+                {
+                    using var stream = dto.File.OpenReadStream();
+                    fileUid = await _storageService.UploadAsync(
+                        stream,
+                        dto.File.FileName,
+                        $"SSOMA/HomologacionPersonal/{dto.HomologationPersonnelId}/Requisito/{dto.RequirementId}",
+                        userId);
+                    dto.FileName = dto.File.FileName;
+                    dto.FileUrl = null;
+                    dto.FilePath = null;
+                }
 
                 _businessRules.Normalize(
                     dto.FileName,
@@ -93,10 +109,13 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 var entity = _mapper.Map<Core.Entities.Ssoma.SsomaHomologationPersonnelDocument>(dto);
                 entity.BusinessId = businessId;
                 entity.UpdateUser = userId;
+                entity.FileUid = fileUid;
 
                 var updated = await _repository.UpdateAsync(entity, transaction);
+                if (updated.Id == null || updated.Id <= 0)
+                    throw new Exception("No se generó el ID versionado del documento.");
 
-                var after = await _repository.GetByIdAsync(dto.SsomaHomologationPersonnelDocumentId, businessId, transaction);
+                var after = await _repository.GetByIdAsync(updated.Id.Value, businessId, transaction);
                 if (after == null)
                     throw new BusinessException("No se pudo recuperar el documento de homologación de personal SSOMA actualizado.");
 

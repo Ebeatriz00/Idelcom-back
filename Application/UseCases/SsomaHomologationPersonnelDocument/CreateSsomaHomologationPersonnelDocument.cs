@@ -19,7 +19,8 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         IMapper mapper,
         ISqlConnectionFactory sqlConnectionFactory,
         IValidator<SsomaHomologationPersonnelDocumentCreateDto> validator,
-        SsomaHomologationPersonnelDocumentBusinessRules businessRules)
+        SsomaHomologationPersonnelDocumentBusinessRules businessRules,
+        Core.Interfaces.IStorageService storageService)
     {
         private readonly ISsomaHomologationPersonnelDocumentRepository _repository = repository;
         private readonly IAuditService _auditService = auditService;
@@ -28,6 +29,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
         private readonly ISqlConnectionFactory _sqlConnectionFactory = sqlConnectionFactory;
         private readonly IValidator<SsomaHomologationPersonnelDocumentCreateDto> _validator = validator;
         private readonly SsomaHomologationPersonnelDocumentBusinessRules _businessRules = businessRules;
+        private readonly Core.Interfaces.IStorageService _storageService = storageService;
 
         public async Task<BaseResponseId> ExecuteAsync(SsomaHomologationPersonnelDocumentCreateDto dto, long userId, long businessId)
         {
@@ -47,6 +49,20 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
 
             try
             {
+                Guid? fileUid = null;
+                if (dto.File != null && dto.File.Length > 0)
+                {
+                    using var stream = dto.File.OpenReadStream();
+                    fileUid = await _storageService.UploadAsync(
+                        stream,
+                        dto.File.FileName,
+                        $"SSOMA/HomologacionPersonal/{dto.HomologationPersonnelId}/Requisito/{dto.RequirementId}",
+                        userId);
+                    dto.FileName = dto.File.FileName;
+                    dto.FileUrl = null;
+                    dto.FilePath = null;
+                }
+
                 _businessRules.Normalize(
                     dto.FileName,
                     dto.FileUrl,
@@ -88,6 +104,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
 
                 var entity = _mapper.Map<Core.Entities.Ssoma.SsomaHomologationPersonnelDocument>(dto);
                 entity.BusinessId = businessId;
+                entity.FileUid = fileUid;
 
                 var existing = await _repository.GetActiveByHomologationAndRequirementAsync(
                     businessId,
@@ -97,30 +114,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
 
                 if (existing != null)
                 {
-                    entity.SsomaHomologationPersonnelDocumentId = existing.SsomaHomologationPersonnelDocumentId;
-                    entity.UpdateUser = userId;
-
-                    var updated = await _repository.UpdateAsync(entity, transaction);
-
-                    var after = await _repository.GetByIdAsync(existing.SsomaHomologationPersonnelDocumentId, businessId, transaction);
-                    if (after == null)
-                        throw new BusinessException("No se pudo recuperar el documento de homologacion de personal SSOMA actualizado.");
-
-                    var updateAuditLog = _auditLogFactory.Create(
-                        businessId,
-                        TableNames.SsomaHomologationPersonnelDocument,
-                        existing.SsomaHomologationPersonnelDocumentId,
-                        userId);
-
-                    await _auditService.RegisterUpdateAsync(existing, after, updateAuditLog, transaction);
-
-                    transaction.Commit();
-                    return new BaseResponseId
-                    {
-                        Status = updated.Status,
-                        Message = updated.Message,
-                        Id = existing.SsomaHomologationPersonnelDocumentId
-                    };
+                    throw new Application.Exceptions.DuplicateEntryException($"Ya existe un documento activo para este requerimiento. Si desea actualizarlo, utilice la opción de reemplazo de documentos.");
                 }
 
                 entity.CreateUser = userId;
@@ -142,6 +136,11 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 return created;
             }
             catch (BaseException)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            catch (Application.Exceptions.BaseException)
             {
                 transaction.Rollback();
                 throw;

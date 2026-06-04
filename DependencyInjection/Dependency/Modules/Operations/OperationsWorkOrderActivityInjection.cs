@@ -18,6 +18,7 @@ namespace DependencyInjection.Dependency.Modules.Operations
             services.AddScoped<GetSelectOperationsWorkOrderActivity>();
             services.AddScoped<DeleteOperationsWorkOrderActivity>();
             services.AddScoped<GetAppActivitiesByResponsible>();
+            services.AddScoped<CloneOperationsWorkOrderActivity>();
 
             services.AddTransient<IValidator<OperationsWorkOrderActivityCreateDto>, OperationsWorkOrderActivityCreateValidator>();
             services.AddTransient<IValidator<OperationsWorkOrderActivityUpdateDto>, OperationsWorkOrderActivityUpdateValidator>();

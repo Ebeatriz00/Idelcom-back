@@ -23,7 +23,14 @@ namespace GlueMark.Controllers
                 // Solo guardamos en caché si la descarga fue exitosa
                 Response.Headers.Append("Cache-Control", "public,max-age=86400");
                 
-                return File(result.Stream, result.MimeType, result.FileName);
+                // Configurar Content-Disposition como inline para visualizar en el navegador
+                Response.Headers.Append("Content-Disposition", new Microsoft.Net.Http.Headers.ContentDispositionHeaderValue("inline")
+                {
+                    FileName = result.FileName,
+                    FileNameStar = result.FileName
+                }.ToString());
+                
+                return File(result.Stream, result.MimeType);
             }
             catch (FileNotFoundException ex)
             {

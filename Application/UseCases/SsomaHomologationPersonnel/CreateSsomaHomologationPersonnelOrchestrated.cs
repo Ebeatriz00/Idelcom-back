@@ -69,6 +69,7 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                     FileName = document.FileName,
                     FileUrl = document.FileUrl,
                     FilePath = document.FilePath,
+                    File = document.File,
                     IssueDate = document.IssueDate,
                     ExpirationDate = document.ExpirationDate,
                     ValidationStatusId = ValidationStatusValid,
@@ -151,6 +152,7 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                 ValidTo = headerValidTo,
                 WorkerStatusId = calculatedWorkerStatusId,
                 SsomaApproved = dto.HomologationPersonnel.SsomaApproved,
+                AdminApproved = dto.HomologationPersonnel.AdminApproved,
                 Notes = dto.HomologationPersonnel.Notes
             };
 
@@ -174,6 +176,7 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                     FileName = document.FileName,
                     FileUrl = document.FileUrl,
                     FilePath = document.FilePath,
+                    File = document.File,
                     IssueDate = document.IssueDate,
                     ExpirationDate = document.ExpirationDate,
                     ValidationStatusId = document.ValidationStatusId,

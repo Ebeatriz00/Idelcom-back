@@ -1,4 +1,4 @@
-﻿             using Core.Attributes;
+             using Core.Attributes;
 using SharedKernel;
 using System;
 using System.Collections.Generic;
@@ -39,6 +39,9 @@ namespace Core.Entities.Ssoma
 
         [AuditField("Aprobado por Ssoma")]
         public bool SsomaApproved { get; set; }
+
+        [AuditField("Aprobado por Administración")]
+        public bool AdminApproved { get; set; }
 
         [AuditField("Notas")]
         public string Notes { get; set; } = null!;

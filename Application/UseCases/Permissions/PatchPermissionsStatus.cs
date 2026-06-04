@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Permissions;
+using Application.DTOs.Permissions;
+using Application.Services.InterfacesServices;
 using Core.Interfaces;
 using FluentValidation;
 using SharedKernel;
@@ -14,12 +15,20 @@ namespace Application.UseCases.Permissions
     public class PatchPermissionsStatus
     {
             private readonly IPermissionsRepository _repository;
+            private readonly IProfilesPermissionsRepository _profilesPermissionsRepository;
             private readonly IValidator<PermissionsStatusToggleDto> _validator;
+            private readonly IAuthPermissionService _authPermissionService;
 
-            public PatchPermissionsStatus(IPermissionsRepository repository, IValidator<PermissionsStatusToggleDto> validator)
+            public PatchPermissionsStatus(
+                IPermissionsRepository repository,
+                IProfilesPermissionsRepository profilesPermissionsRepository,
+                IValidator<PermissionsStatusToggleDto> validator,
+                IAuthPermissionService authPermissionService)
             {
                 _repository = repository;
+                _profilesPermissionsRepository = profilesPermissionsRepository;
                 _validator = validator;
+                _authPermissionService = authPermissionService;
             }
 
             public async Task<GlobalResponse> ExecuteAsync(PermissionsStatusToggleDto dto)
@@ -33,7 +42,14 @@ namespace Application.UseCases.Permissions
                     throw new AppValidationException(errores);
                 }
 
+                var affectedProfiles = await _profilesPermissionsRepository
+                    .GetAffectedProfileIdsByPermissionAsync(dto.PermissionsId, dto.BusinessId);
                 var updated = await _repository.PatchStatusAsync(dto.PermissionsId, dto.Status, dto.UsersBy, dto.BusinessId);
+                if (updated)
+                {
+                    foreach (var profilesId in affectedProfiles)
+                        _authPermissionService.Invalidate(profilesId, dto.BusinessId);
+                }
 
                 return new GlobalResponse
                 {

@@ -16,5 +16,11 @@ namespace Application.DTOs.Operations.OperationsWorkOrderProgress
         public decimal? CurrentQuantity { get; set; }
         public string? Observations { get; set; }
         public List<OperationsWorkOrderProgressPhotoDto> Photos { get; set; } = new();
+
+        public long WorkOrderId { get; set; }
+        public string? WorkOrderCode { get; set; }
+        public long? SubActivityId { get; set; }
+        public string? SubActivityName { get; set; }
+        public string? MeasurementUnitSymbol { get; set; }
     }
 }

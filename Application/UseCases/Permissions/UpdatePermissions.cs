@@ -1,5 +1,6 @@
-﻿using Application.DTOs.Permissions;
+using Application.DTOs.Permissions;
 using Application.Exceptions;
+using Application.Services.InterfacesServices;
 using AutoMapper;
 using Core.Interfaces;
 using FluentValidation;
@@ -17,14 +18,23 @@ namespace Application.UseCases.Permissions
     {
 
             private readonly IPermissionsRepository _repository;
+            private readonly IProfilesPermissionsRepository _profilesPermissionsRepository;
             private readonly IValidator<PermissionsUpdateDto> _validator;
             private readonly IMapper _mapper;
+            private readonly IAuthPermissionService _authPermissionService;
 
-            public UpdatePermissions(IPermissionsRepository repository, IValidator<PermissionsUpdateDto> validator, IMapper mapper)
+            public UpdatePermissions(
+                IPermissionsRepository repository,
+                IProfilesPermissionsRepository profilesPermissionsRepository,
+                IValidator<PermissionsUpdateDto> validator,
+                IMapper mapper,
+                IAuthPermissionService authPermissionService)
             {
                 _repository = repository;
+                _profilesPermissionsRepository = profilesPermissionsRepository;
                 _validator = validator;
                 _mapper = mapper;
+                _authPermissionService = authPermissionService;
             }
 
             public async Task<GlobalResponse> ExecuteAsync(PermissionsUpdateDto dto)
@@ -44,7 +54,15 @@ namespace Application.UseCases.Permissions
                 }
 
                 var entity = _mapper.Map<Core.Entities.Permissions>(dto);
+                var affectedProfiles = await _profilesPermissionsRepository
+                    .GetAffectedProfileIdsByPermissionAsync(dto.PermissionsId, dto.BusinessId);
                 var updated = await _repository.UpdateAsync(entity);
+                if (updated)
+                {
+                    foreach (var profilesId in affectedProfiles)
+                        _authPermissionService.Invalidate(profilesId, dto.BusinessId);
+                }
+
                 return new GlobalResponse
                 {
                     Status = updated ? 1 : 0,

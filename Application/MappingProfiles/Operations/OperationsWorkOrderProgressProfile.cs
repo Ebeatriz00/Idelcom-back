@@ -11,6 +11,7 @@ namespace Application.MappingProfiles.Operations
         {
             CreateMap<OperationsWorkOrderProgressCreateDto, OperationWorkOrderProgress>();
             CreateMap<OperationsWorkOrderProgressSyncDto, OperationWorkOrderProgress>();
+            CreateMap<OperationsWorkOrderProgressUpdateDto, OperationWorkOrderProgress>();
             CreateMap<OperationWorkOrderProgress, OperationsWorkOrderProgressResponseDto>();
             CreateMap(typeof(PagedResult<>), typeof(PagedResult<>));
         }

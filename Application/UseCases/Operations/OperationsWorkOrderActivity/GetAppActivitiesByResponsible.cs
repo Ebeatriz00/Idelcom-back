@@ -44,6 +44,7 @@ namespace Application.UseCases.Operations.OperationsWorkOrderActivity
                         WorkOrderId = wo.WorkOrderId,
                         WorkOrderName = wo.WorkOrderName,
                         WorkOrderProgress = wo.WorkOrderProgress,
+                        WorkOrderCode = wo.WorkOrderCode,
                         Activities = rootActivitiesByWorkOrder.TryGetValue(wo.WorkOrderId, out var woRootActivities)
                             ? woRootActivities.Select(ra => MapToActivityDto(ra, subActivitiesByParent)).ToList()
                             : new List<AppActivityDetailResponseDto>()

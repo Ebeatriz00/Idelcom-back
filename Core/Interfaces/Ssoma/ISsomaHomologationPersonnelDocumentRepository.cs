@@ -22,7 +22,7 @@ namespace Core.Interfaces.Ssoma
             int requirementId,
             IDbTransaction transaction);
         Task<BaseResponseId> CreateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction);
-        Task<BaseResponse> UpdateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction);
+        Task<BaseResponseId> UpdateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction);
         Task<BaseResponse> MarkAsReplacedAsync(
             long id,
             long businessId,
