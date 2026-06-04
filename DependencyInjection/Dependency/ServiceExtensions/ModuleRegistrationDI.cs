@@ -36,6 +36,7 @@ namespace DependencyInjection.Dependency.ServiceExtensions
             services.AddUsersServices();
             services.AddAuthServices();
             services.AddAppAuthServices();
+            services.AddMobileAppVersionServices();
             services.AddBusinessServices();
             services.AddModulesPermissionsServices();
             services.AddProfilesPermissionsServices();
