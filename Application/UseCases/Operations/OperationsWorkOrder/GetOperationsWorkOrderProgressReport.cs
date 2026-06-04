@@ -37,7 +37,12 @@ namespace Application.UseCases.Operations.OperationsWorkOrder
                 Observations = d.Observations,
                 TargetQuantity = d.TargetQuantity,
                 CurrentQuantity = d.CurrentQuantity,
-                MeasurementUnitSymbol = d.MeasurementUnitSymbol
+                MeasurementUnitSymbol = d.MeasurementUnitSymbol,
+                ActivityProgressPercentage = d.ActivityProgressPercentage,
+                WorkOrderId = d.WorkOrderId,
+                WorkOrderCode = d.WorkOrderCode,
+                SubActivityId = d.SubActivityId,
+                SubActivityName = d.SubActivityName
             }).ToList();
 
             return new OperationsWorkOrderProgressReportResponseDto
