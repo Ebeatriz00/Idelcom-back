@@ -60,6 +60,13 @@ namespace Application.UseCases.Operations.Operations
             {
                 var entity = _mapper.Map<Operation>(dto);
 
+                // Forzar el estado a Planificación (2) al guardar la configuración
+                // Solo lo aplicamos si el estado ANTERIOR era "Solicitado" (1)
+                if (before.OperationsStatusId == 1)
+                {
+                    entity.OperationsStatusId = 2;
+                }
+
                 if (dto.ClosurePdfFile != null)
                 {
                     using var stream = dto.ClosurePdfFile.OpenReadStream();

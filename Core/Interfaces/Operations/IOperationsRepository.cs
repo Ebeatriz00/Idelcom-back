@@ -1,4 +1,4 @@
-﻿using Core.Entities.Operations;
+using Core.Entities.Operations;
 using Core.Entities.paginations;
 using Core.Projections.Operations;
 using SharedKernel;

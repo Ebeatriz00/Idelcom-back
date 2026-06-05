@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Operations.Operations;
+using Application.DTOs.Operations.Operations;
 using AutoMapper;
 using Core.Entities.Operations;
 using Core.Interfaces.Audit;

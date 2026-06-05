@@ -32,7 +32,38 @@
 }
 
 @section Title {
-    Alerta SSOMA de Documentos
+    @{
+        // Buscamos el scope del primer documento disponible de forma segura
+        string scopeValue = "";
+        if (Model.Workers != null)
+        {
+            foreach (var w in Model.Workers)
+            {
+                if (w.Documents != null)
+                {
+                    foreach (var d in w.Documents)
+                    {
+                        scopeValue = d.Scope?.ToString() ?? "";
+                        break;
+                    }
+                }
+                if (!string.IsNullOrEmpty(scopeValue)) break;
+            }
+        }
+    }
+
+    @if (scopeValue == "1" || scopeValue.ToUpper().Contains("INTERNO"))
+    {
+        <text>Documentos Administrativos</text>
+    }
+    else if (scopeValue == "2" || scopeValue.ToUpper().Contains("PROYECTO"))
+    {
+        <text>Documentos de Homologación</text>
+    }
+    else
+    {
+        <text>Alerta SSOMA de Documentos</text>
+    }
 }
 
 <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#444;">
