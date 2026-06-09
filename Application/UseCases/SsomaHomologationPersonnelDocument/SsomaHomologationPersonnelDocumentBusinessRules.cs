@@ -1,14 +1,19 @@
 using Core.Interfaces.Ssoma;
+using Core.Interfaces.Ssoma.Clinics;
 using Infrastructure.Exceptions;
 
 namespace Application.UseCases.SsomaHomologationPersonnelDocument
 {
     public class SsomaHomologationPersonnelDocumentBusinessRules(
         ISsomaHomologationPersonnelRepository homologationPersonnelRepository,
-        ISsomaRequirementRepository requirementRepository)
+        ISsomaRequirementRepository requirementRepository,
+        Core.Interfaces.IWorkerRepository workerRepository,
+        IClinicRepository clinicRepository)
     {
         private readonly ISsomaHomologationPersonnelRepository _homologationPersonnelRepository = homologationPersonnelRepository;
         private readonly ISsomaRequirementRepository _requirementRepository = requirementRepository;
+        private readonly Core.Interfaces.IWorkerRepository _workerRepository = workerRepository;
+        private readonly IClinicRepository _clinicRepository = clinicRepository;
 
         public void Normalize(
             string? fileName,
@@ -113,6 +118,35 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
             }
 
             return null;
+        }
+
+        public async Task<string> GetUploadPathAsync(long businessId, long homologationPersonnelId, int requirementId, long? clinicId = null)
+        {
+            var homologation = await _homologationPersonnelRepository.GetByIdAsync(homologationPersonnelId, businessId)
+                ?? throw new BusinessException("La homologación de personal SSOMA no existe.");
+
+            var requirement = await _requirementRepository.GetByIdAsync(requirementId, businessId)
+                ?? throw new BusinessException("El requerimiento SSOMA no existe.");
+
+            var worker = await _workerRepository.GetByIdAsync(homologation.WorkerId)
+                ?? throw new BusinessException("El trabajador no existe.");
+
+            string scopeText = requirement.ScopeId == 1 ? "INTERNO" : "PROYECTO";
+            string workerFullName = $"{worker.WorkerName} {worker.WorkerLastName}".Trim();
+            
+            string basePath = $"OPERACIONES/SSOMA/HOMOLOGACIONES/{workerFullName}/{scopeText}";
+
+            if (clinicId.HasValue)
+            {
+                var clinic = await _clinicRepository.GetByIdAsync(clinicId.Value, businessId);
+                if (clinic != null)
+                {
+                    string clinicName = clinic.ClinicName?.Trim().ToUpperInvariant() ?? "SIN_NOMBRE";
+                    basePath = $"{basePath}/EMO/{clinicName}";
+                }
+            }
+
+            return basePath;
         }
 
         private static void ValidateFileExtension(string? allowedExtensions, string fileName)

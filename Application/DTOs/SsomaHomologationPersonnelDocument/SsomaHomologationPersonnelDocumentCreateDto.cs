@@ -27,5 +27,7 @@ namespace Application.DTOs.SsomaHomologationPersonnelDocument
         public int? DocumentVersion { get; set; }
         [JsonIgnore]
         public string? ReplacementReason { get; set; }
+
+        public long? ClinicId { get; set; }
     }
 }

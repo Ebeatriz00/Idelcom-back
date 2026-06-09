@@ -129,10 +129,11 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                     businessId,
                     dto.HomologationPersonnelId,
                     dto.RequirementId,
+                    dto.ClinicId,
                     transaction);
 
             if (documentToReplace == null)
-                throw new BusinessException("No se encontro el documento de homologacion de personal SSOMA a reemplazar.");
+                throw new BusinessException($"DEBUG INFO: Dto.DocId={dto.SsomaHomologationPersonnelDocumentId}, Dto.ClinicId={dto.ClinicId}, Dto.HomolId={dto.HomologationPersonnelId}, Dto.ReqId={dto.RequirementId}");
 
             _businessRules.Normalize(
                 dto.FileName,
@@ -153,11 +154,12 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
             Guid? fileUid = null;
             if (dto.File != null && dto.File.Length > 0)
             {
+                var uploadPath = await _businessRules.GetUploadPathAsync(businessId, dto.HomologationPersonnelId, dto.RequirementId, dto.ClinicId);
                 using var stream = dto.File.OpenReadStream();
                 fileUid = await _storageService.UploadAsync(
                     stream,
                     dto.File.FileName,
-                    $"SSOMA/HomologacionPersonal/{dto.HomologationPersonnelId}/Requisito/{dto.RequirementId}",
+                    uploadPath,
                     userId);
                 normalizedFileName = dto.File.FileName;
                 normalizedFileUrl = null;
@@ -183,7 +185,8 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 Observation = normalizedObservation,
                 ReplacedDocumentId = documentToReplace.SsomaHomologationPersonnelDocumentId,
                 DocumentVersion = (documentToReplace.DocumentVersion ?? 1) + 1,
-                ReplacementReason = replacementReason
+                ReplacementReason = replacementReason,
+                ClinicId = dto.ClinicId ?? documentToReplace.ClinicId
             };
 
             var validation = await _validator.ValidateAsync(createDto);
@@ -228,6 +231,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 ReplacedDocumentId = createDto.ReplacedDocumentId,
                 DocumentVersion = createDto.DocumentVersion,
                 ReplacementReason = createDto.ReplacementReason,
+                ClinicId = createDto.ClinicId,
                 CreateUser = userId
             };
 

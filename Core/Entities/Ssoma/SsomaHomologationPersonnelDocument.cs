@@ -52,5 +52,8 @@ namespace Core.Entities.Ssoma
 
         [AuditField("Motivo del reemplazo")]
         public string? ReplacementReason { get; set; }
+
+        [AuditField("Clinica")]
+        public long? ClinicId { get; set; }
     }
 }

@@ -45,12 +45,15 @@ namespace Core.Projections.Ssoma
         public string Requeriment { get; set; } = null!;
         public long RequirementId { get; set; } 
         public long HomologationPersonnelId { get; set; }
+        public long? SsomaHomologationPersonnelDocumentId { get; set; }
+        public long? ClinicId { get; set; }
         public string FileName { get; set; } = null!;
         public string ValidationStatus { get; set; } = null!;
         public string FileExpiration { get; set; } = null!;
         public string FileReview { get; set; } = null!;
         public string? FileUrl { get; set; }
         public Guid? FileUid { get; set; }
+        public string? ClinicName { get; set; }
 
     }
     public class SsomaPersonnelHomologationOperationsItem
@@ -60,12 +63,15 @@ namespace Core.Projections.Ssoma
         public string Requeriment { get; set; } = null!;
         public long RequirementId { get; set; }
         public long HomologationPersonnelId { get; set; }
+        public long? SsomaHomologationPersonnelDocumentId { get; set; }
+        public long? ClinicId { get; set; }
         public string FileName { get; set; } = null!;
         public string ValidationStatus { get; set; } = null!;
         public string FileExpiration { get; set; } = null!;
         public string FileReview { get; set; } = null!;
         public string? FileUrl { get; set; }
         public Guid? FileUid { get; set; }
+        public string? ClinicName { get; set; }
 
     }
 

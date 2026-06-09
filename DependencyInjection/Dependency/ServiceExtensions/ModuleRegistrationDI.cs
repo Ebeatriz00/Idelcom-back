@@ -93,6 +93,7 @@ namespace DependencyInjection.Dependency.ServiceExtensions
             services.AddSsomaOperationsRequirementInjection();
             services.AddSsomaHomologationPersonnelInjection();
             services.AddSsomaHomologationPersonnelDocumentInjection();
+            services.AddClinicServices();
             services.AddOrdersServices();
             services.AddDashboardPreSalesServices();
             services.AddLicStatusServices();

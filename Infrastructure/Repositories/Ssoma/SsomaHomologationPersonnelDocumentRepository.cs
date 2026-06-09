@@ -21,6 +21,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.BusinessId,
                     entity.HomologationPersonnelId,
                     entity.RequirementId,
+                    entity.ClinicId,
                     entity.FileName,
                     entity.FileUrl,
                     entity.FilePath,
@@ -165,13 +166,15 @@ namespace Infrastructure.Repositories.Ssoma
             long businessId,
             long homologationPersonnelId,
             int requirementId,
+            long? clinicId,
             IDbTransaction transaction)
         {
             var parameters = DapperParams.From(new
             {
                 BusinessId = businessId,
                 HomologationPersonnelId = homologationPersonnelId,
-                RequirementId = requirementId
+                RequirementId = requirementId,
+                ClinicId = clinicId
             });
 
             var query = @"
@@ -180,9 +183,11 @@ namespace Infrastructure.Repositories.Ssoma
                     BUSINESS_ID AS BusinessId,
                     HOMOLOGATION_PERSONNEL_ID AS HomologationPersonnelId,
                     REQUIREMENT_ID AS RequirementId,
+                    CLINIC_ID AS ClinicId,
                     FILE_NAME AS FileName,
                     FILE_URL AS FileUrl,
                     FILE_PATH AS FilePath,
+                    FILE_UID AS FileUid,
                     ISSUE_DATE AS IssueDate,
                     EXPIRATION_DATE AS ExpirationDate,
                     VALIDATION_STATUS_ID AS ValidationStatusId,
@@ -200,6 +205,7 @@ namespace Infrastructure.Repositories.Ssoma
                 WHERE BUSINESS_ID = @BusinessId
                   AND HOMOLOGATION_PERSONNEL_ID = @HomologationPersonnelId
                   AND REQUIREMENT_ID = @RequirementId
+                  AND (@ClinicId IS NULL OR CLINIC_ID = @ClinicId)
                   AND STATUS = '1'
                 ORDER BY SSOMA_HOMOLOGATION_PERSONNEL_DOCUMENT_ID DESC;";
 
@@ -220,6 +226,7 @@ namespace Infrastructure.Repositories.Ssoma
                     entity.BusinessId,
                     entity.HomologationPersonnelId,
                     entity.RequirementId,
+                    entity.ClinicId,
                     entity.FileName,
                     entity.FileUrl,
                     entity.FilePath,
