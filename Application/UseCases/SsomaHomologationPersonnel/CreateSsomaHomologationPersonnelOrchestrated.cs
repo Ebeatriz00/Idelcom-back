@@ -62,10 +62,17 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                 }
             }
 
+            // if (dto.Documents != null && dto.Documents.Any())
+            // {
+            //     var debugIds = string.Join(", ", dto.Documents.Select(d => d.ClinicId?.ToString() ?? "NULL"));
+            //     throw new Exception($"DEBUG: ClinicIds={debugIds}");
+            // }
+
             var documents = (dto.Documents ?? new List<DocumentCreateDto>())
                 .Select(document => new DocumentCreateDto
                 {
                     RequirementId = document.RequirementId,
+                    ClinicId = document.ClinicId,
                     FileName = document.FileName,
                     FileUrl = document.FileUrl,
                     FilePath = document.FilePath,
@@ -79,17 +86,17 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                 .ToList();
 
             var documentErrors = new List<GlobalErrorDetail>();
-            var duplicatedRequirementIds = documents
-                .GroupBy(document => document.RequirementId)
+            var duplicatedRequirementKeys = documents
+                .GroupBy(document => new { document.RequirementId, document.ClinicId })
                 .Where(group => group.Count() > 1)
                 .Select(group => group.Key)
                 .ToList();
 
-            foreach (var requirementId in duplicatedRequirementIds)
+            foreach (var key in duplicatedRequirementKeys)
             {
                 documentErrors.Add(new GlobalErrorDetail(
                     "DUPLICATED_REQUIREMENT",
-                    $"No se puede registrar mas de un documento activo para el requerimiento {requirementId}."));
+                    $"No se puede registrar mas de un documento activo para el requerimiento {key.RequirementId} con la misma clínica."));
             }
 
             foreach (var document in documents)
@@ -173,6 +180,7 @@ namespace Application.UseCases.SsomaHomologationPersonnel
                 {
                     HomologationPersonnelId = createdPersonnel.Id.Value,
                     RequirementId = document.RequirementId,
+                    ClinicId = document.ClinicId,
                     FileName = document.FileName,
                     FileUrl = document.FileUrl,
                     FilePath = document.FilePath,

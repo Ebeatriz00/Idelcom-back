@@ -20,6 +20,7 @@ namespace Core.Interfaces.Ssoma
             long businessId,
             long homologationPersonnelId,
             int requirementId,
+            long? clinicId,
             IDbTransaction transaction);
         Task<BaseResponseId> CreateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction);
         Task<BaseResponseId> UpdateAsync(SsomaHomologationPersonnelDocument entity, IDbTransaction transaction);

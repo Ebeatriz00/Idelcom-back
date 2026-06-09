@@ -15,5 +15,6 @@ namespace Application.DTOs.SsomaHomologationPersonnelDocument
         public int ValidationStatusId { get; set; }
         public DateTime ReviewDate { get; set; }
         public string Observation { get; set; } = null!;
+        public long? ClinicId { get; set; }
     }
 }

@@ -52,11 +52,12 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                 Guid? fileUid = null;
                 if (dto.File != null && dto.File.Length > 0)
                 {
+                    var uploadPath = await _businessRules.GetUploadPathAsync(businessId, dto.HomologationPersonnelId, dto.RequirementId, dto.ClinicId);
                     using var stream = dto.File.OpenReadStream();
                     fileUid = await _storageService.UploadAsync(
                         stream,
                         dto.File.FileName,
-                        $"SSOMA/HomologacionPersonal/{dto.HomologationPersonnelId}/Requisito/{dto.RequirementId}",
+                        uploadPath,
                         userId);
                     dto.FileName = dto.File.FileName;
                     dto.FileUrl = null;
@@ -110,6 +111,7 @@ namespace Application.UseCases.SsomaHomologationPersonnelDocument
                     businessId,
                     entity.HomologationPersonnelId,
                     entity.RequirementId,
+                    entity.ClinicId,
                     transaction);
 
                 if (existing != null)
