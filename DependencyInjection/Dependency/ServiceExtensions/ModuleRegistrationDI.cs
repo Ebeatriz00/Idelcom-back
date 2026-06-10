@@ -172,6 +172,7 @@ namespace DependencyInjection.Dependency.ServiceExtensions
             services.AddOperationsWorkOrderActivityInjection();
             services.AddOperationsWorkOrderProgressInjection();
             services.AddAppAttendanceInjection();
+            services.AddAppAttendanceV2Injection();
             services.AddSupportServices();
 
             return services;
