@@ -21,7 +21,7 @@ namespace Infrastructure.Repositories.Operations
                     BusinessId = businessId,
                     entity.ReportedQuantity,
                     entity.ReportedDate,
-                    WorkerId = userId,
+                    WorkerId = (long?)null,
                     entity.Observations,
                     CreateUser = userId
                 })
