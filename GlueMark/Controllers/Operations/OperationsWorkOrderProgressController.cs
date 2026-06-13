@@ -8,9 +8,11 @@ namespace Idelcom.Controllers.Operations
     [Route("api/[controller]")]
     [ApiController]
     public class OperationsWorkOrderProgressController(
-        GetOperationsWorkOrderProgressList getListUseCase) : BaseController
+        GetOperationsWorkOrderProgressList getListUseCase,
+        CreateAppOperationsWorkOrderProgress createUseCase) : BaseController
     {
         private readonly GetOperationsWorkOrderProgressList _getListUseCase = getListUseCase;
+        private readonly CreateAppOperationsWorkOrderProgress _createUseCase = createUseCase;
 
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll(
@@ -36,6 +38,16 @@ namespace Idelcom.Controllers.Operations
                 Message = "Fotos obtenidas exitosamente.",
                 Data = result
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] OperationsWorkOrderProgressCreateDto dto)
+        {
+            var userId = GetCurrentUserId();
+            var businessId = GetCurrentBusinessId();
+
+            var result = await _createUseCase.ExecuteAsync(dto, userId, businessId);
+            return Ok(result);
         }
     }
 }
