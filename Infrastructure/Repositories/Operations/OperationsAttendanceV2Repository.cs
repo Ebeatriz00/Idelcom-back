@@ -50,7 +50,7 @@ namespace Infrastructure.Repositories.Operations
             });
 
             var table = BuildDetailTable(request.Details);
-            parameters.WithTable("Details", table, "dbo.TVP_APP_ATTENDANCE_DETAIL");
+            parameters.WithTable("Details", table, "dbo.TVP_APP_ATTENDANCE_DETAIL_V2");
 
             await _dapperHelper.ExecuteAsync("SP_WS_REGISTER_APP_ATTENDANCE_BATCH_V2", parameters, commandType: CommandType.StoredProcedure);
 
